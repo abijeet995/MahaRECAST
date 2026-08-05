@@ -1581,8 +1581,8 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   /* Scope line — which Department/Establishment the whole Overview tab (KPIs,
      pyramid, tables) is currently reflecting. Sits right under the filter bar,
      above the KPI row, so it never has to be guessed from the dropdowns alone. */
-  .ov-scope { display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-soft); margin:0 0 14px; }
-  .ov-scope svg { width:16px; height:16px; flex:none; color:var(--saffron); }
+  .ov-scope { display:flex; align-items:center; gap:9px; font-size:16px; color:var(--text-soft); margin:0 0 14px; }
+  .ov-scope svg { width:19px; height:19px; flex:none; color:var(--saffron); }
   .ov-scope b { color:var(--ink); font-weight:700; }
   .ov-scope .ov-scope-sep { color:var(--slate); }
 
@@ -1592,7 +1592,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
      highlight ring instead of overwriting its color, so the group identity holds
      regardless of selection state. */
   .ov-pyramid { width:100%; }
-  .ovp-title { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:var(--text-soft); margin-bottom:12px; text-align:center; }
+  .ovp-title { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:var(--text-soft); margin-bottom:12px; text-align:center; }
   .pyr-stack { display:flex; flex-direction:column; max-width:420px; margin:0 auto; }
   .pyr-level { position:relative; width:100%; height:72px; border:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
   /* Shape lives on its own absolutely-positioned layer so its clip-path can morph to
@@ -1610,11 +1610,11 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .pyr-level.active { transform:scale(1.02); z-index:2; }
   .pyr-level.active .pyr-shape { filter:brightness(1.08) drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 8px 16px rgba(33,29,24,.3)); }
   .pyr-name, .pyr-sub, .pyr-count { position:relative; z-index:1; }
-  .pyr-name { font-size:14.5px; font-weight:700; }
-  .pyr-sub { font-size:10.5px; font-weight:500; opacity:.85; }
-  .pyr-count { font-size:11px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
+  .pyr-name { font-size:16.5px; font-weight:700; }
+  .pyr-sub { font-size:12px; font-weight:500; opacity:.85; }
+  .pyr-count { font-size:12.5px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
   .pyr-level:focus-visible { outline:2px solid var(--ink); outline-offset:-4px; }
-  .ovp-shape-badge { display:inline-flex; align-self:center; margin:-4px auto 14px; font-size:10.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:4px 12px; }
+  .ovp-shape-badge { display:inline-flex; align-self:center; margin:-4px auto 14px; font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:5px 13px; }
 
   /* centre metrics */
   .cwe-metrics { min-width:0; }
@@ -1997,7 +1997,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
         <!-- CADRE WORKFORCE EXPLORER -->
         <div class="cwe">
           <div class="cwe-head">
-            <div class="cwe-title" id="cwe-title">All Cadre Groups &nbsp;·&nbsp; All Departments</div>
+            <div class="cwe-title" id="cwe-title">Cadre Workforce Explorer</div>
           </div>
           <div class="cwe-body">
             <!-- LEFT: pyramid -->
@@ -2942,6 +2942,49 @@ function metricsHTML(group, rows, w, f) {
     </div>`;
 }
 
+// ── Overview pyramid — continuous proportional silhouette ──
+// Deliberately independent of the RR Analysis hourglass's 4-template classifier.
+// Each band's own count directly sets a half-width (as a % of the pyramid's own
+// width); adjacent bands share their boundary width (the average of the two
+// counts on either side of it) so the outline tapers smoothly with no visible
+// seams, and the largest group always reaches the full-width cap while none
+// shrink below a legibility floor.
+const PYR_MIN_HALF_PCT = 16;   // smallest a band's half-width can shrink to
+const PYR_MAX_HALF_PCT = 50;   // half-width of the single largest group (full width)
+
+function computePyramidBandClips(counts) {
+  const maxCount = Math.max(...counts, 1);
+  const halfW = counts.map(c => PYR_MIN_HALF_PCT + (PYR_MAX_HALF_PCT - PYR_MIN_HALF_PCT) * (c / maxCount));
+  const n = counts.length;
+  const bounds = [halfW[0]];                                   // flat top cap
+  for (let i = 0; i < n - 1; i++) bounds.push((halfW[i] + halfW[i + 1]) / 2); // shared seams
+  bounds.push(halfW[n - 1]);                                    // flat bottom cap
+  return counts.map((_, i) => {
+    const top = bounds[i], bottom = bounds[i + 1];
+    return `polygon(${(50 - top).toFixed(2)}% 0%, ${(50 + top).toFixed(2)}% 0%, ${(50 + bottom).toFixed(2)}% 100%, ${(50 - bottom).toFixed(2)}% 100%)`;
+  });
+}
+
+// Classification mirrors a simple "which raw count clearly leads" comparison —
+// same spirit as the reference visualiser's classify(a,b,c,d): compares Group A
+// and Group C against whichever of the two B buckets is smaller/larger, rather
+// than working off percentages of a whole.
+const PYRAMID_SHAPE_INFO = {
+  pyramid:         'Bottom Heavy · Wide Base Pyramid',
+  invertedPyramid: 'Top Heavy · Inverted Pyramid',
+  diamond:         'Middle Heavy · Diamond',
+  hourglass:       'Middle Light · Hourglass',
+  balanced:        'Balanced Distribution',
+};
+function classifyPyramidShape(a, b, c, d) {
+  const midMin = Math.min(b, c), midMax = Math.max(b, c);
+  if (midMin < a * 0.85 && midMin < d * 0.85) return 'hourglass';
+  if (midMax > a * 1.15 && midMax > d * 1.15) return 'diamond';
+  if (a > d * 1.15) return 'invertedPyramid';
+  if (d > a * 1.15) return 'pyramid';
+  return 'balanced';
+}
+
 function renderGroupExplorer() {
   if (!RAW_DATA.length) return;
   const f = currentFilters();
@@ -2955,19 +2998,21 @@ function renderGroupExplorer() {
       el.innerHTML = rawCounts[i].toLocaleString('en-IN') + ' cadres · ' + rawPcts[i].toFixed(1) + '%';
     });
   });
-  // Shape the pyramid itself to the real A/B/C mix — same silhouette engine as the
-  // RR Analysis hourglass (classifyHourglassShape + buildBandClipPaths), so a
-  // department that's actually top-heavy or diamond-shaped reads as one at a glance
-  // instead of always showing the same fixed taper.
-  const [pctA, pctBG, pctBN, pctC] = rawPcts;
-  const shapeKey = classifyHourglassShape(pctA, pctBG, pctBN, pctC);
-  const clips = buildBandClipPaths(shapeKey);
+  // Shape the pyramid to the real A/B/C mix — a direct proportional silhouette
+  // (each band's edge width comes straight from its own count, per computePyramid
+  // BandClips below), not a snap-to-one-of-4-templates classifier. Deliberately a
+  // separate, simpler computation from the RR Analysis hourglass: that one holds
+  // band height fixed and picks from 4 canned profiles, this one lets the actual
+  // numbers draw the taper continuously.
+  const clips = computePyramidBandClips(rawCounts);
   document.querySelectorAll('.pyr-stack .pyr-level').forEach((el, i) => {
     const shapeEl = el.querySelector('.pyr-shape');
     if (shapeEl) shapeEl.style.clipPath = clips[i];
   });
+  const [cA, cBG, cBN, cC] = rawCounts;
+  const shapeKey = classifyPyramidShape(cA, cBG, cBN, cC);
   const badge = document.getElementById('ovp-shape-badge');
-  if (badge && HOURGLASS_SHAPE_INFO[shapeKey]) badge.textContent = HOURGLASS_SHAPE_INFO[shapeKey].label;
+  if (badge && PYRAMID_SHAPE_INFO[shapeKey]) badge.textContent = PYRAMID_SHAPE_INFO[shapeKey];
   // Highlight selected section (single source of truth = Group filter)
   const selected = f.group;
   document.querySelectorAll('.pyr-level').forEach(b => {
@@ -2975,13 +3020,11 @@ function renderGroupExplorer() {
     b.classList.toggle('active', on);
     b.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  // Explorer heading reflects what is being viewed (department · establishment)
+  // Card header is a plain label now — the dept/establishment it's showing is
+  // already stated once, up top in the scope line (see below), so it isn't
+  // repeated here too.
   const ttl = document.getElementById('cwe-title');
-  if (ttl) {
-    const parts = [ f.dept ? f.dept : 'All Departments' ];
-    if (f.est) parts.push(f.est);
-    ttl.innerHTML = parts.map(esc).join(' <span class="cwe-sep">·</span> ');
-  }
+  if (ttl) ttl.textContent = 'Cadre Workforce Explorer';
   // Scope line under the filter bar — same dept/establishment context, restated
   // up top so it doesn't have to be read off the dropdowns. Collapses to just
   // "All Departments" when nothing is selected; adds the establishment only
