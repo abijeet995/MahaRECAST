@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MahaRECAST — Cadre Reforms</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; padding: 0; overflow-x: hidden; background: var(--bg); font-family: 'Poppins', system-ui, sans-serif; }
+  a { text-decoration: none; color: inherit; }
+
+  @keyframes pulse { 0%,100%{opacity:.5;transform:scale(.9);} 50%{opacity:1;transform:scale(1);} }
+  @keyframes scrollDrop { 0%{opacity:0;transform:translateY(-8px);} 50%{opacity:1;transform:translateY(4px);} 100%{opacity:0;transform:translateY(16px);} }
+  @keyframes shimmer { 0%{background-position:200% center;} 100%{background-position:-200% center;} }
+
+  /* Entrance fade helper */
+  .rise { opacity: 0; transform: translateY(28px); transition: opacity .9s ease, transform .9s ease; }
+  body.loaded .rise { opacity: 1; transform: none; }
+
+  /* Step cards reveal */
+  .step { opacity: 0; transform: translateY(36px); transition: opacity .75s ease, transform .75s ease; }
+  .step.in { opacity: 1; transform: none; }
+
+  /* Chaos → order bars */
+  .cbar {
+    position: absolute; left: 0; right: 0; height: 24px; border-radius: 5px;
+    display: flex; align-items: center; gap: 8px; padding: 0 10px; overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0,0,0,.22);
+    transition: transform .85s cubic-bezier(.34,1.2,.64,1), background .6s ease, box-shadow .4s ease;
+  }
+  .cbar .rowc { opacity: 0; transition: opacity .5s ease .35s; display: flex; align-items: center; gap: 8px; width: 100%; }
+  .chaos-card.ordered .cbar {
+    transform: none !important; background: #fff !important;
+    border: 1px solid #F0EEE9; box-shadow: 0 1px 5px rgba(20,20,20,.07); z-index: 1 !important;
+  }
+  .chaos-card.ordered .cbar .rowc { opacity: 1; }
+  .chaos-card #orderHeader, .chaos-card #afterFooter { display: none; }
+  .chaos-card.ordered #orderHeader { display: flex; }
+  .chaos-card.ordered #afterFooter { display: flex; }
+  .chaos-card.ordered #beforeBadge { display: none; }
+
+  @media (max-width: 860px) {
+    .steps-grid, .stats-grid { grid-template-columns: 1fr 1fr !important; }
+  }
+  @media (max-width: 560px) {
+    .steps-grid, .stats-grid { grid-template-columns: 1fr !important; }
+  }
+
+  /* ══════════════════════════════════════════════════════════════
+     HERO REDESIGN — split-screen product showcase
+     Palette, map background and typography reuse the existing identity.
+     ══════════════════════════════════════════════════════════════ */
+  :root{
+    /* Shared MahaRECAST design tokens — warm ivory/cream theme */
+    --bg:#FBF8F3; --bg-alt:#F5EFE6; --surface:#FFFFFF; --surface-soft:#FFFCF8;
+    --border:#EDE7DD; --border-soft:#F3EEE5;
+    --ink:#211D18; --text:#4A443C; --text-soft:#8A8073;
+    --saffron:#F26522; --saffron-hover:#DA5714; --saffron-pale:#FFF3EA;
+    --blue:#4A90C2; --green:#4F9B6E; --amber:#D9A441; --purple:#8B7EC8; --red:#D9534F; --slate:#9C948A;
+    --group-a:#F26522; --group-bg:#D9A441; --group-bn:#3FA7A0; --group-c:#4A90C2;
+    --shadow-sm:0 1px 2px rgba(90,60,30,.05); --shadow-md:0 4px 16px rgba(90,60,30,.07);
+    --shadow-lg:0 16px 40px rgba(90,60,30,.10); --shadow-accent-glow:0 0 0 1px rgba(242,101,34,.16),0 8px 22px rgba(242,101,34,.16);
+    --radius-sm:8px; --radius-md:12px; --radius-lg:18px; --radius-pill:999px;
+
+    /* Landing-page aliases — same names used throughout the showcase mockup below,
+       redefined from translucent-white (dark-glass) to translucent-ink (light-paper)
+       so the mockup flips theme without touching each individual rule. */
+    --mr-accent:var(--saffron); --mr-accent-lt:#FF8C52;
+    --mr-blue:var(--blue); --mr-green:var(--green); --mr-amber:var(--amber); --mr-purple:var(--purple);
+    --mr-line:rgba(33,29,24,.10); --mr-line2:rgba(33,29,24,.16);
+    --mr-dim:rgba(33,29,24,.62); --mr-faint:rgba(33,29,24,.42);
+    --mr-panel:rgba(33,29,24,.035);
+  }
+  @keyframes mrPulse{0%,100%{opacity:.45;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+  @keyframes mrFloatIn{0%{opacity:0;transform:translateY(14px)}100%{opacity:1;transform:none}}
+  @keyframes mrPop{0%{opacity:0;transform:scale(.8)}100%{opacity:1;transform:none}}
+  @keyframes mrGlow{0%,100%{opacity:.15}50%{opacity:1}}
+  @keyframes mrRingPulse{0%{transform:scale(.8);opacity:.8}100%{transform:scale(1.45);opacity:0}}
+  @keyframes mrDrift{0%{transform:translate(0,0)}50%{transform:translate(6px,-8px)}100%{transform:translate(0,0)}}
+
+  .hero{position:relative;min-height:100vh;display:flex;align-items:center;background:var(--bg);overflow:hidden}
+  /* Delicate background network graphic — a soft dot lattice standing in for the old
+     dark satellite-map image, which doesn't suit a light, airy hero. */
+  .hero__network{position:absolute;inset:0;pointer-events:none;
+    background-image:
+      radial-gradient(rgba(33,29,24,.06) 1px, transparent 1px),
+      radial-gradient(rgba(242,101,34,.08) 1.5px, transparent 1.5px);
+    background-size:42px 42px, 152px 152px;
+    background-position:0 0, 30px 40px;
+    animation:mrDrift 26s ease-in-out infinite}
+  .hero__veil{position:absolute;inset:0;pointer-events:none;background:
+    radial-gradient(120% 95% at 8% 45%, var(--bg) 0%, rgba(251,248,243,.75) 45%, rgba(251,248,243,0) 80%),
+    linear-gradient(180deg, rgba(251,248,243,.55), transparent 22%, transparent 80%, rgba(251,248,243,.75))}
+  .hero__top{position:absolute;top:0;left:0;right:0;height:3px;z-index:4;background:linear-gradient(90deg,#F26522,#FF8C52,#F26522);background-size:200% auto;animation:shimmer 3s linear infinite}
+  .hero__grid{position:relative;z-index:2;flex:1 1 auto;width:100%;min-width:0;max-width:1620px;margin:0 auto;padding:104px 48px 76px;display:grid;grid-template-columns:minmax(300px,1fr) minmax(0,2fr);gap:48px;align-items:center}
+
+  /* ── left column ── */
+  .hero__left{max-width:470px}
+  .hero__seal{width:60px;height:60px;object-fit:contain;filter:drop-shadow(0 2px 14px rgba(242,101,34,.3));margin-bottom:20px}
+  .hero__dept{font-size:10.5px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--mr-faint);line-height:1.85;margin-bottom:22px}
+  .hero__title{font-size:clamp(42px,4.4vw,76px);font-weight:900;letter-spacing:-.04em;line-height:.92;color:var(--ink);margin:0}
+  .hero__title b{font-weight:900;color:var(--mr-accent)}
+  .hero__tag{font-size:12.5px;font-style:italic;color:var(--mr-faint);margin-top:14px;line-height:1.55;max-width:410px}
+  .hero__rule{width:44px;height:2px;background:var(--mr-accent);border-radius:2px;margin:24px 0}
+  .hero__intro{font-size:15px;line-height:1.75;color:var(--mr-dim);margin:0 0 30px;max-width:445px}
+  .hero__intro strong{color:var(--ink);font-weight:600}
+  .hero__intro .hl{color:var(--mr-accent);font-weight:700;white-space:nowrap}
+  .hero__cta{display:inline-flex;align-items:center;gap:9px;background:linear-gradient(135deg,#F26522,#FF7A3D);color:#fff;font-size:15px;font-weight:700;padding:15px 30px;border-radius:12px;box-shadow:0 12px 36px -6px rgba(242,101,34,.5);transition:transform .2s ease,box-shadow .2s ease}
+  .hero__cta:hover{transform:translateY(-3px);box-shadow:0 18px 48px -8px rgba(242,101,34,.6)}
+  .hero__cta svg{width:16px;height:16px;transition:transform .2s ease}
+  .hero__cta:hover svg{transform:translateX(4px)}
+
+  /* ── showcase window ── */
+  .hero__right{min-width:0}
+  .showcase{position:relative;border-radius:16px;overflow:hidden;background:linear-gradient(158deg,var(--surface),var(--surface-soft));border:1px solid var(--border);box-shadow:0 30px 70px -24px rgba(90,60,30,.22),inset 0 1px 0 rgba(255,255,255,.6)}
+  .showcase::after{content:'';position:absolute;top:-70px;left:50%;transform:translateX(-50%);width:60%;height:130px;background:radial-gradient(closest-side,rgba(242,101,34,.22),transparent);pointer-events:none;z-index:0}
+  .sc-head{position:relative;z-index:2;display:flex;align-items:center;gap:12px;padding:12px 15px;border-bottom:1px solid var(--border);background:var(--bg-alt)}
+  .sc-dots{display:flex;gap:6px}
+  .sc-dots i{width:11px;height:11px;border-radius:50%;display:block}
+  .sc-url{display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:11px;color:var(--mr-faint);min-width:220px}
+  .sc-url svg{width:11px;height:11px;stroke:var(--mr-green);flex:none}
+  .sc-live{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mr-green)}
+  .sc-live i{width:6px;height:6px;border-radius:50%;background:var(--mr-green);animation:mrPulse 2s infinite}
+
+  .sc-body{position:relative;height:470px}
+  .slide{position:absolute;inset:0;padding:20px 24px;opacity:0;visibility:hidden;transform:translateY(12px);transition:opacity .45s ease,transform .5s ease,visibility 0s linear .5s;overflow:hidden}
+  .slide.active{opacity:1;visibility:visible;transform:none;transition:opacity .55s ease,transform .65s cubic-bezier(.22,1,.36,1),visibility 0s}
+  .slide-head{margin-bottom:16px}
+  .slide-kicker{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--mr-accent)}
+  .slide-title{font-size:19px;font-weight:800;color:var(--ink);margin:5px 0 5px;letter-spacing:-.01em}
+  .slide-desc{font-size:12px;color:var(--mr-dim);line-height:1.5;max-width:560px}
+  .slide.active .stagger{animation:mrFloatIn .5s both}
+
+  /* nav */
+  .sc-nav{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px 18px 18px;border-top:1px solid var(--border);background:var(--bg-alt)}
+  .nav-item{appearance:none;background:none;border:0;padding:0;text-align:left;cursor:pointer;font-family:inherit;opacity:.55;transition:opacity .25s ease}
+  .nav-item.active{opacity:1}
+  .nav-item:hover{opacity:.85}
+  .nav-top{display:flex;align-items:baseline;gap:7px;margin-bottom:8px}
+  .nav-num{font-size:10px;font-weight:800;color:var(--mr-faint);font-variant-numeric:tabular-nums}
+  .nav-item.active .nav-num{color:var(--mr-accent)}
+  .nav-label{font-size:11px;font-weight:600;color:var(--mr-dim);line-height:1.2}
+  .nav-item.active .nav-label{color:var(--ink)}
+  .nav-track{height:2px;background:rgba(33,29,24,.10);border-radius:2px;overflow:hidden}
+  .nav-fill{display:block;height:100%;width:0;background:linear-gradient(90deg,#F26522,#FF8C52);border-radius:2px}
+
+  /* slide 1 — repository */
+  .repo-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:15px}
+  .repo-stat{background:var(--mr-panel);border:1px solid var(--mr-line);border-radius:11px;padding:13px 12px}
+  .repo-stat b{display:block;font-size:25px;font-weight:900;color:var(--ink);letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+  .repo-stat span{display:block;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--mr-faint);margin-top:6px}
+  .repo-search{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--mr-line2);border-radius:10px;padding:11px 14px;margin-bottom:14px}
+  .repo-search svg{width:15px;height:15px;flex:none;stroke:var(--mr-faint)}
+  .repo-search .q{font-size:12.5px;color:var(--ink);white-space:nowrap;overflow:hidden;min-height:15px}
+  .repo-search .caret{width:1.5px;height:14px;background:var(--mr-accent);animation:mrGlow 1s steps(2,jump-none) infinite;flex:none}
+  .repo-cols{display:grid;grid-template-columns:148px 1fr;gap:16px}
+  .repo-fgroup{margin-bottom:11px}
+  .repo-fgroup .fg-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mr-faint);margin-bottom:6px}
+  .repo-chips{display:flex;flex-wrap:wrap;gap:5px}
+  .chip{font-size:10px;font-weight:600;color:var(--mr-dim);background:rgba(33,29,24,.035);border:1px solid var(--mr-line);border-radius:6px;padding:3px 8px;white-space:nowrap}
+  .chip.on{color:var(--saffron-hover);font-weight:700;background:var(--saffron-pale);border-color:rgba(242,101,34,.45)}
+  .repo-list{display:flex;flex-direction:column;gap:7px}
+  .repo-row{display:flex;align-items:center;gap:10px;background:var(--mr-panel);border:1px solid var(--mr-line);border-radius:9px;padding:9px 12px}
+  .repo-row .rc{width:7px;height:7px;border-radius:2px;flex:none}
+  .repo-row .rn{flex:1;min-width:0;display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;color:var(--mr-accent);text-decoration:underline;text-decoration-color:rgba(242,101,34,.4);text-underline-offset:3px;transition:color .2s ease,text-decoration-color .2s ease}
+  .repo-row .rn .rn-t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .repo-row .rn .rn-ext{width:10px;height:10px;flex:none;opacity:.85}
+  .repo-row .rn:hover{color:var(--mr-accent-lt);text-decoration-color:var(--mr-accent-lt)}
+  .repo-row .rd{font-size:10px;color:var(--mr-faint);flex:none}
+  .repo-row .rp{font-size:9px;font-weight:700;color:var(--mr-accent);background:rgba(242,101,34,.12);border-radius:5px;padding:2px 7px;flex:none}
+
+  /* slide 2 — compare & generate */
+  .cmp{display:grid;grid-template-columns:1fr 1fr 30px 1fr;gap:11px;align-items:start}
+  .doc{background:var(--mr-panel);border:1px solid var(--mr-line);border-radius:11px;padding:12px;min-width:0}
+  .doc.gen{border-color:rgba(242,101,34,.45);background:rgba(242,101,34,.06);box-shadow:0 0 0 1px rgba(242,101,34,.14),0 12px 34px -14px rgba(242,101,34,.5)}
+  .doc-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:6px}
+  .doc-h b{font-size:11px;font-weight:800;color:var(--ink);white-space:nowrap}
+  .doc-tag{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--mr-faint);border:1px solid var(--mr-line);border-radius:5px;padding:2px 5px;flex:none}
+  .doc.gen .doc-tag{color:var(--mr-accent);border-color:rgba(242,101,34,.4)}
+  .doc-row{margin-bottom:9px}
+  .doc-row .k{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--mr-faint);margin-bottom:4px}
+  .doc-row .v{height:6px;border-radius:3px;background:rgba(33,29,24,.09);width:100%}
+  .doc-row.diff .v{background:rgba(242,101,34,.6)}
+  .doc-row.miss .v{background:transparent;border:1px dashed rgba(33,29,24,.22);height:6px}
+  .doc.gen .doc-row .v{background:rgba(242,101,34,.4)}
+  .cmp-arrow{align-self:center;display:flex;align-items:center;justify-content:center;color:var(--mr-accent)}
+  .cmp-arrow svg{width:22px;height:22px}
+  .doc.gen .doc-check{display:inline-flex;align-items:center;gap:5px;margin-top:4px;font-size:9px;font-weight:700;color:var(--mr-green)}
+  .doc.gen .doc-check svg{width:12px;height:12px;stroke:var(--mr-green)}
+  .cmp-legend{display:flex;gap:18px;margin-top:16px;justify-content:center;flex-wrap:wrap}
+  .cmp-legend span{display:inline-flex;align-items:center;gap:6px;font-size:10px;color:var(--mr-dim)}
+  .cmp-legend i{width:9px;height:9px;border-radius:2px;display:block}
+
+  /* slide 3 — capability analysis */
+  .an{display:grid;grid-template-columns:.92fr 1fr 1.28fr;gap:12px;align-items:center}
+  .an-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--mr-faint);text-align:center;margin-bottom:11px}
+  .an-cadres{display:flex;flex-direction:column;gap:7px}
+  .an-card{background:var(--mr-panel);border:1px solid var(--mr-line);border-radius:8px;padding:8px 10px;font-size:10.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .an-hub{position:relative;width:96px;height:96px;margin:0 auto;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(242,101,34,.28),rgba(242,101,34,.04));border:1px solid rgba(242,101,34,.42)}
+  .slide.active .an-hub::before,.slide.active .an-hub::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(242,101,34,.35);animation:mrRingPulse 2.4s ease-out infinite}
+  .slide.active .an-hub::after{animation-delay:1.2s}
+  .an-hub b{position:relative;font-size:8.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--mr-accent);text-align:center;line-height:1.3}
+  .an-out{display:flex;flex-direction:column;gap:12px}
+  .an-buckets,.an-caps{display:flex;flex-wrap:wrap;gap:5px}
+  .an-bucket{font-size:9.5px;font-weight:700;color:var(--blue);background:rgba(74,144,194,.12);border:1px solid rgba(74,144,194,.35);border-radius:6px;padding:4px 8px}
+  .an-cap{font-size:9.5px;font-weight:700;color:var(--purple);background:rgba(139,126,200,.14);border:1px solid rgba(139,126,200,.38);border-radius:99px;padding:4px 9px}
+
+  /* slide 4 — requisition & monitoring */
+  .mon-flow{display:flex;align-items:center;gap:7px;margin-bottom:14px;flex-wrap:wrap}
+  .mon-flow em{font-style:normal;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--mr-dim);background:rgba(33,29,24,.035);border:1px solid var(--mr-line);border-radius:6px;padding:4px 9px}
+  .mon-flow svg{width:12px;height:12px;stroke:var(--mr-faint);flex:none}
+  .mon{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  .mon-card{background:var(--mr-panel);border:1px solid var(--mr-line);border-radius:11px;padding:12px 13px}
+  .mon-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:6px}
+  .mon-dept{font-size:11.5px;font-weight:700;color:var(--ink)}
+  .mon-vac{font-size:9.5px;color:var(--mr-faint)}
+  .mon-vac b{color:var(--mr-accent);font-size:12.5px;font-weight:800;font-variant-numeric:tabular-nums}
+  .mon-mid{display:flex;align-items:center;gap:12px}
+  .mon-ring{width:44px;height:44px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;background:conic-gradient(var(--mr-accent) 0%,rgba(33,29,24,.10) 0)}
+  .mon-ring i{width:34px;height:34px;border-radius:50%;background:var(--surface);display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:800;color:var(--ink);font-style:normal;font-variant-numeric:tabular-nums}
+  .mon-bars{flex:1;min-width:0}
+  .mon-brow{margin-bottom:9px}
+  .mon-brow:last-child{margin-bottom:0}
+  .mon-blbl{display:flex;justify-content:space-between;font-size:8.5px;color:var(--mr-faint);margin-bottom:4px}
+  .mon-blbl b{color:var(--ink);font-weight:700}
+  .mon-bar{height:5px;background:rgba(33,29,24,.09);border-radius:3px;overflow:hidden}
+  .mon-bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,#F26522,#FF8C52);border-radius:3px;transition:width 1.1s cubic-bezier(.22,1,.36,1)}
+  .status{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;border-radius:5px;padding:3px 7px;white-space:nowrap}
+  .status.prog{color:var(--mr-blue);background:rgba(74,144,194,.13)}
+  .status.pend{color:var(--mr-amber);background:rgba(217,164,65,.16)}
+  .status.appr{color:var(--mr-green);background:rgba(79,155,110,.15)}
+
+  /* ── responsive ── */
+  @media (max-width:1080px){
+    .hero__grid{grid-template-columns:minmax(0,1fr);gap:40px;padding:96px 32px 64px}
+    .hero__left,.hero__right{min-width:0}
+    .hero__left{max-width:640px}
+    .sc-body{height:468px}
+  }
+  @media (max-width:768px){
+    .hero__grid{padding:88px 20px 56px}
+    .sc-body{height:auto;min-height:0}
+    .slide{position:relative;display:none;transform:none;transition:opacity .4s ease}
+    .slide.active{position:relative;display:block}
+    .repo-cols{grid-template-columns:1fr}
+    .cmp{grid-template-columns:1fr 1fr;gap:10px}
+    .cmp .cmp-arrow{display:none}
+    .cmp .doc.gen{grid-column:1 / -1}
+    .an{grid-template-columns:1fr;gap:16px}
+    .an-hub{width:80px;height:80px}
+    .mon{grid-template-columns:1fr}
+  }
+  @media (max-width:480px){
+    .slide{padding:16px 15px}
+    .repo-stats{gap:7px}
+    .repo-stat{padding:11px 9px}
+    .repo-stat b{font-size:20px}
+    .repo-stat span{font-size:8px;letter-spacing:.03em}
+    .sc-url{min-width:0;max-width:180px}
+    .sc-head{gap:8px;padding:11px 12px}
+    .repo-search .q{min-width:0}
+    .cmp{grid-template-columns:1fr}
+  }
+
+  /* ── reduced motion ── */
+  @media (prefers-reduced-motion: reduce){
+    .hero__network,.hero__top{animation:none}
+    .slide{transition:opacity .3s ease}
+    .slide.active .stagger{animation:none}
+    .repo-search .caret{animation:none;opacity:.6}
+    .slide.active .an-hub::before,.slide.active .an-hub::after{animation:none;display:none}
+    .sc-live i{animation:none}
+    .mon-bar span{transition:none}
+  }
+</style>
+</head>
+<body>
+<div style="overflow-x:hidden">
+
+  <!-- ══════════ HERO — split-screen product showcase ══════════ -->
+  <section class="hero">
+    <div class="hero__network" aria-hidden="true"></div>
+    <div class="hero__veil"></div>
+    <div class="hero__top"></div>
+
+    <div class="hero__grid">
+
+      <!-- ── LEFT: brand & introduction ── -->
+      <div class="hero__left">
+        <img class="hero__seal rise" src="landing-seal.png" alt="Government of Maharashtra" style="transition-delay:0ms">
+        <div class="hero__dept rise" style="transition-delay:80ms">General Administration Department<br>Government of Maharashtra</div>
+        <h1 class="hero__title rise" style="transition-delay:180ms">Maha<b>RECAST</b></h1>
+        <div class="hero__tag rise" style="transition-delay:260ms">Recruitment Rules Engine for Cadre Analytics, Standards and Transformation</div>
+        <div class="hero__rule rise" style="transition-delay:340ms"></div>
+        <p class="hero__intro rise" style="transition-delay:420ms">
+          Recruitment Rules once lived in scattered gazette PDFs and siloed drafts. Now RRs catering to <strong class="hl"><span class="live-cadres">1,167</span> cadres</strong> live in one place — searchable, comparable, and standardised.
+        </p>
+        <div class="rise" style="transition-delay:520ms">
+          <a class="hero__cta" href="dashboard.html">
+            Explore Portal
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- ── RIGHT: interactive product showcase ── -->
+      <div class="hero__right rise" style="transition-delay:420ms">
+        <div class="showcase" id="showcase">
+          <div class="sc-head">
+            <div class="sc-dots"><i style="background:#FF5F57"></i><i style="background:#FEBC2E"></i><i style="background:#28C840"></i></div>
+            <div class="sc-url">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              maharecast.gov.in
+            </div>
+            <div class="sc-live"><i></i>Live</div>
+          </div>
+
+          <div class="sc-body">
+
+            <!-- SLIDE 1 — Cadre Repository -->
+            <div class="slide" data-slide="0">
+              <div class="slide-head">
+                <div class="slide-kicker">01 — Repository</div>
+                <div class="slide-title">Cadre Repository</div>
+                <div class="slide-desc">1,167 cadres across 44 departments and 101 establishments, mapped by Group, Family and Pay Scale.</div>
+              </div>
+              <div class="repo-stats">
+                <div class="repo-stat stagger" style="animation-delay:.05s"><b id="sc-cad">1,167</b><span>Cadres</span></div>
+                <div class="repo-stat stagger" style="animation-delay:.12s"><b id="sc-dep">44</b><span>Departments</span></div>
+                <div class="repo-stat stagger" style="animation-delay:.19s"><b id="sc-est">101</b><span>Establishments</span></div>
+              </div>
+              <div class="repo-search stagger" style="animation-delay:.26s">
+                <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round"><circle cx="11" cy="11" r="7" stroke-width="2"></circle><line x1="21" y1="21" x2="16.5" y2="16.5" stroke-width="2"></line></svg>
+                <span class="q" id="sc-search"></span><span class="caret"></span>
+              </div>
+              <div class="repo-cols">
+                <div class="repo-filters stagger" style="animation-delay:.33s">
+                  <div class="repo-fgroup">
+                    <div class="fg-lbl">Group</div>
+                    <div class="repo-chips"><span class="chip on">Group A</span><span class="chip">B</span><span class="chip">C</span><span class="chip">D</span></div>
+                  </div>
+                  <div class="repo-fgroup">
+                    <div class="fg-lbl">Family</div>
+                    <div class="repo-chips"><span class="chip">Admin</span><span class="chip on">Engineering</span><span class="chip">Finance</span><span class="chip">Legal</span><span class="chip">Police</span></div>
+                  </div>
+                  <div class="repo-fgroup">
+                    <div class="fg-lbl">Pay Scale</div>
+                    <div class="repo-chips"><span class="chip">L16</span><span class="chip">L15</span><span class="chip on">L14</span><span class="chip">L13</span><span class="chip">L12</span></div>
+                  </div>
+                </div>
+                <div class="repo-list">
+                  <div class="repo-row stagger" style="animation-delay:.40s"><span class="rc" style="background:#F26522"></span><a class="rn" href="dashboard.html"><span class="rn-t">Deputy Collector</span><svg class="rn-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a><span class="rd">Revenue</span><span class="rp">L14</span></div>
+                  <div class="repo-row stagger" style="animation-delay:.47s"><span class="rc" style="background:#2AA7DF"></span><a class="rn" href="dashboard.html"><span class="rn-t">Executive Engineer</span><svg class="rn-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a><span class="rd">PWD</span><span class="rp">L13</span></div>
+                  <div class="repo-row stagger" style="animation-delay:.54s"><span class="rc" style="background:#2E9D5B"></span><a class="rn" href="dashboard.html"><span class="rn-t">Superintendent of Police</span><svg class="rn-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a><span class="rd">Home</span><span class="rp">L14</span></div>
+                  <div class="repo-row stagger" style="animation-delay:.61s"><span class="rc" style="background:#7C3AED"></span><a class="rn" href="dashboard.html"><span class="rn-t">Assistant Director</span><svg class="rn-ext" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a><span class="rd">Finance</span><span class="rp">L12</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SLIDE 2 — Compare & Generate RRs -->
+            <div class="slide" data-slide="1">
+              <div class="slide-head">
+                <div class="slide-kicker">02 — Compare</div>
+                <div class="slide-title">Compare &amp; Generate RRs</div>
+                <div class="slide-desc">Compare Recruitment Rules side by side, identify differences, and generate fresh Recruitment Rules.</div>
+              </div>
+              <div class="cmp">
+                <div class="doc stagger" style="animation-delay:.05s">
+                  <div class="doc-h"><b>RR A</b><span class="doc-tag">2016</span></div>
+                  <div class="doc-row"><div class="k">Cadre Name</div><div class="v"></div></div>
+                  <div class="doc-row"><div class="k">Appointing Auth.</div><div class="v"></div></div>
+                  <div class="doc-row diff"><div class="k">Qualification</div><div class="v"></div></div>
+                  <div class="doc-row"><div class="k">Experience</div><div class="v"></div></div>
+                  <div class="doc-row diff"><div class="k">Age Limit</div><div class="v"></div></div>
+                  <div class="doc-row"><div class="k">Pay Scale</div><div class="v"></div></div>
+                </div>
+                <div class="doc stagger" style="animation-delay:.14s">
+                  <div class="doc-h"><b>RR B</b><span class="doc-tag">2021</span></div>
+                  <div class="doc-row"><div class="k">Cadre Name</div><div class="v"></div></div>
+                  <div class="doc-row"><div class="k">Appointing Auth.</div><div class="v"></div></div>
+                  <div class="doc-row diff"><div class="k">Qualification</div><div class="v"></div></div>
+                  <div class="doc-row"><div class="k">Experience</div><div class="v"></div></div>
+                  <div class="doc-row diff"><div class="k">Age Limit</div><div class="v"></div></div>
+                  <div class="doc-row miss"><div class="k">Other Terms</div><div class="v"></div></div>
+                </div>
+                <div class="cmp-arrow stagger" style="animation-delay:.30s">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </div>
+                <div class="doc gen stagger" style="animation-delay:.42s">
+                  <div class="doc-h"><b>Generated RR</b><span class="doc-tag">New</span></div>
+                  <div class="doc-row stagger" style="animation-delay:.52s"><div class="k">Cadre Name</div><div class="v"></div></div>
+                  <div class="doc-row stagger" style="animation-delay:.60s"><div class="k">Appointing Auth.</div><div class="v"></div></div>
+                  <div class="doc-row stagger" style="animation-delay:.68s"><div class="k">Qualification</div><div class="v"></div></div>
+                  <div class="doc-row stagger" style="animation-delay:.76s"><div class="k">Experience</div><div class="v"></div></div>
+                  <div class="doc-row stagger" style="animation-delay:.84s"><div class="k">Age Limit</div><div class="v"></div></div>
+                  <div class="doc-row stagger" style="animation-delay:.92s"><div class="k">Pay Scale</div><div class="v"></div></div>
+                  <div class="doc-check stagger" style="animation-delay:1.02s">
+                    <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Draft ready
+                  </div>
+                </div>
+              </div>
+              <div class="cmp-legend">
+                <span><i style="background:rgba(255,255,255,.4)"></i>Matching</span>
+                <span><i style="background:#F26522"></i>Changed</span>
+                <span><i style="background:transparent;border:1px dashed rgba(255,255,255,.4)"></i>Missing</span>
+              </div>
+            </div>
+
+            <!-- SLIDE 3 — Capability Analysis -->
+            <div class="slide" data-slide="2">
+              <div class="slide-head">
+                <div class="slide-kicker">03 — Analysis</div>
+                <div class="slide-title">Capability Analysis</div>
+                <div class="slide-desc">Every cadre is classified by Exam Bucket and Capability, enabling structured workforce and recruitment analysis.</div>
+              </div>
+              <div class="an">
+                <div>
+                  <div class="an-lbl">Cadres</div>
+                  <div class="an-cadres">
+                    <div class="an-card stagger" style="animation-delay:.05s">Deputy Collector</div>
+                    <div class="an-card stagger" style="animation-delay:.13s">Executive Engineer</div>
+                    <div class="an-card stagger" style="animation-delay:.21s">Medical Officer</div>
+                    <div class="an-card stagger" style="animation-delay:.29s">Section Officer</div>
+                  </div>
+                </div>
+                <div>
+                  <div class="an-lbl">Analysis Engine</div>
+                  <div class="an-hub stagger" style="animation-delay:.30s"><b>Classify<br>&amp; Map</b></div>
+                </div>
+                <div>
+                  <div class="an-lbl">Exam Bucket + Capability</div>
+                  <div class="an-out">
+                    <div class="an-buckets">
+                      <span class="an-bucket stagger" style="animation-delay:.50s">Group A Services</span>
+                      <span class="an-bucket stagger" style="animation-delay:.57s">Technical Services</span>
+                      <span class="an-bucket stagger" style="animation-delay:.64s">Departmental</span>
+                      <span class="an-bucket stagger" style="animation-delay:.71s">Specialist</span>
+                    </div>
+                    <div class="an-caps">
+                      <span class="an-cap stagger" style="animation-delay:.80s">Strategic</span>
+                      <span class="an-cap stagger" style="animation-delay:.87s">Managerial</span>
+                      <span class="an-cap stagger" style="animation-delay:.94s">Technical</span>
+                      <span class="an-cap stagger" style="animation-delay:1.01s">Functional</span>
+                      <span class="an-cap stagger" style="animation-delay:1.08s">Domain Specific</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SLIDE 4 — Requisition & Workforce Monitoring -->
+            <div class="slide" data-slide="3">
+              <div class="slide-head">
+                <div class="slide-kicker">04 — Monitoring</div>
+                <div class="slide-title">Requisition &amp; Workforce Monitoring</div>
+                <div class="slide-desc">Track vacancies, requisitions, status and roster completion across every department.</div>
+              </div>
+              <div class="mon-flow stagger" style="animation-delay:.05s">
+                <em>Vacancy</em>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <em>Requisition</em>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <em>Status</em>
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                <em>Roster</em>
+              </div>
+              <div class="mon">
+                <div class="mon-card stagger" data-vac="132" data-req="89" data-ros="85" style="animation-delay:.12s">
+                  <div class="mon-top"><span class="mon-dept">Revenue</span><span class="mon-vac">Vac <b>132</b></span></div>
+                  <div class="mon-mid">
+                    <div class="mon-ring"><i>0%</i></div>
+                    <div class="mon-bars">
+                      <div class="mon-brow"><div class="mon-blbl"><span>Requisition</span><b>89%</b></div><div class="mon-bar"><span></span></div></div>
+                      <div class="mon-brow"><div class="mon-blbl"><span>Status</span></div><span class="status prog">In Progress</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mon-card stagger" data-vac="55" data-req="62" data-ros="48" style="animation-delay:.19s">
+                  <div class="mon-top"><span class="mon-dept">Home</span><span class="mon-vac">Vac <b>55</b></span></div>
+                  <div class="mon-mid">
+                    <div class="mon-ring"><i>0%</i></div>
+                    <div class="mon-bars">
+                      <div class="mon-brow"><div class="mon-blbl"><span>Requisition</span><b>62%</b></div><div class="mon-bar"><span></span></div></div>
+                      <div class="mon-brow"><div class="mon-blbl"><span>Status</span></div><span class="status pend">Pending</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mon-card stagger" data-vac="98" data-req="78" data-ros="80" style="animation-delay:.26s">
+                  <div class="mon-top"><span class="mon-dept">Health</span><span class="mon-vac">Vac <b>98</b></span></div>
+                  <div class="mon-mid">
+                    <div class="mon-ring"><i>0%</i></div>
+                    <div class="mon-bars">
+                      <div class="mon-brow"><div class="mon-blbl"><span>Requisition</span><b>78%</b></div><div class="mon-bar"><span></span></div></div>
+                      <div class="mon-brow"><div class="mon-blbl"><span>Status</span></div><span class="status prog">In Progress</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mon-card stagger" data-vac="120" data-req="91" data-ros="95" style="animation-delay:.33s">
+                  <div class="mon-top"><span class="mon-dept">Education</span><span class="mon-vac">Vac <b>120</b></span></div>
+                  <div class="mon-mid">
+                    <div class="mon-ring"><i>0%</i></div>
+                    <div class="mon-bars">
+                      <div class="mon-brow"><div class="mon-blbl"><span>Requisition</span><b>91%</b></div><div class="mon-bar"><span></span></div></div>
+                      <div class="mon-brow"><div class="mon-blbl"><span>Status</span></div><span class="status appr">Approved</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- navigation -->
+          <div class="sc-nav">
+            <button class="nav-item" data-nav="0"><div class="nav-top"><span class="nav-num">01</span><span class="nav-label">Cadre Repository</span></div><div class="nav-track"><span class="nav-fill"></span></div></button>
+            <button class="nav-item" data-nav="1"><div class="nav-top"><span class="nav-num">02</span><span class="nav-label">Compare &amp; Generate</span></div><div class="nav-track"><span class="nav-fill"></span></div></button>
+            <button class="nav-item" data-nav="2"><div class="nav-top"><span class="nav-num">03</span><span class="nav-label">Capability Analysis</span></div><div class="nav-track"><span class="nav-fill"></span></div></button>
+            <button class="nav-item" data-nav="3"><div class="nav-top"><span class="nav-num">04</span><span class="nav-label">Requisition &amp; Monitoring</span></div><div class="nav-track"><span class="nav-fill"></span></div></button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ CHAOS → ORDER ══════════ -->
+  <section id="story" data-section="chaos" style="padding:100px 24px; background:#FAF9F6">
+    <div style="max-width:720px; margin:0 auto">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.13em; color:#F26522; margin-bottom:14px">The Transformation</div>
+      <h2 style="font-size:clamp(28px, 4.5vw, 42px); font-weight:900; color:#141414; line-height:1.15; margin:0 0 16px; letter-spacing:-.02em">
+        It existed everywhere.<br>It was visible <em style="font-style:italic; color:#C4C4C4">nowhere</em>.
+      </h2>
+      <p style="font-size:16px; color:#5C5C5C; line-height:1.75; margin:0 0 52px; max-width:520px">
+        Cadre data lived in departmental files, old Government Resolutions, and disconnected spreadsheets — inconsistent formats, impossible to search, impossible to compare.
+      </p>
+
+      <div class="chaos-card" id="chaosCard" style="background:#fff; border-radius:16px; border:1px solid #E5E3DF; padding:22px; box-shadow:0 6px 32px rgba(20,20,20,.09); overflow:visible">
+        <div style="margin-bottom:14px; height:30px; display:flex; align-items:center">
+          <div id="beforeBadge" style="display:inline-flex; align-items:center; gap:7px; background:#FFF0E8; border:1px solid #FDE7D9; border-radius:7px; padding:5px 12px">
+            <span style="width:6px; height:6px; border-radius:50%; background:#F26522; flex:none; animation:pulse 1.5s ease-in-out infinite; display:inline-block"></span>
+            <span style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:#F26522">Before — Offline · Unstructured · Incomparable</span>
+          </div>
+          <div id="orderHeader" style="align-items:center; width:100%; background:#F8F7F4; border-radius:7px; overflow:hidden">
+            <div style="width:28px; flex:none; padding:7px 0; text-align:center; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#A0A0A0; border-right:1px solid #E5E3DF">#</div>
+            <div style="width:90px; flex:none; padding:7px 10px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#A0A0A0; border-right:1px solid #E5E3DF">Department</div>
+            <div style="flex:1; padding:7px 10px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#A0A0A0; border-right:1px solid #E5E3DF">Cadre Name</div>
+            <div style="width:76px; flex:none; padding:7px 10px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#A0A0A0; border-right:1px solid #E5E3DF">Pay Scale</div>
+            <div style="width:86px; flex:none; padding:7px 10px; font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:#A0A0A0">RR Change</div>
+          </div>
+        </div>
+
+        <div id="chaosRows" style="position:relative; height:316px; overflow:visible"></div>
+
+        <div id="afterFooter" style="margin-top:16px; padding-top:14px; border-top:1px solid #F0EEE9; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px">
+          <div style="display:inline-flex; align-items:center; gap:7px; background:#DEF2E6; border-radius:7px; padding:5px 12px">
+            <span style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.09em; color:#2E9D5B">After — Digital · Standardised · Comparable</span>
+          </div>
+          <span style="font-size:12px; color:#9A9A9A"><span class="live-cadres">1,167</span> cadres · <span class="live-depts">44</span> departments · Live data</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ HOW WE DID IT ══════════ -->
+  <section data-section="steps" style="padding:100px 24px; background:var(--bg-alt); position:relative; overflow:hidden">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(rgba(33,29,24,.05) 1px, transparent 1px); background-size:30px 30px; pointer-events:none"></div>
+    <div style="max-width:1000px; margin:0 auto; position:relative; z-index:1">
+      <div style="text-align:center; margin-bottom:64px">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.13em; color:#F26522; margin-bottom:14px">How We Did It</div>
+        <h2 style="font-size:clamp(28px, 4.5vw, 42px); font-weight:900; color:var(--ink); line-height:1.15; margin:0; letter-spacing:-.02em">Four steps to clarity</h2>
+      </div>
+
+      <div class="steps-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px">
+
+        <div class="step" style="transition-delay:0ms">
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 26px; height:100%; transition:border-color .2s, box-shadow .2s"
+               onmouseover="this.style.borderColor='rgba(242,101,34,.4)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+            <div style="width:48px; height:48px; border-radius:12px; background:rgba(242,101,34,.12); border:1px solid rgba(242,101,34,.2); display:flex; align-items:center; justify-content:center; margin-bottom:24px">
+              <svg style="width:22px; height:22px; fill:none; stroke:#F26522; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+            </div>
+            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:#F26522; margin-bottom:10px">01 · Collect</div>
+            <h3 style="font-size:19px; font-weight:700; color:var(--ink); margin:0 0 12px; line-height:1.3; letter-spacing:-.01em">Every RR. Every department.</h3>
+            <p style="font-size:14px; color:var(--text-soft); line-height:1.7; margin:0">Pulled Recruitment Rules, pay scales, exam schemes, and group classifications from 44 departments and 101 establishments across Maharashtra.</p>
+          </div>
+        </div>
+
+        <div class="step" style="transition-delay:180ms">
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 26px; height:100%; transition:border-color .2s, box-shadow .2s"
+               onmouseover="this.style.borderColor='rgba(74,144,194,.4)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+            <div style="width:48px; height:48px; border-radius:12px; background:rgba(74,144,194,.1); border:1px solid rgba(74,144,194,.25); display:flex; align-items:center; justify-content:center; margin-bottom:24px">
+              <svg style="width:22px; height:22px; fill:none; stroke:#4A90C2; stroke-width:1.75; stroke-linecap:round" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"></path></svg>
+            </div>
+            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:#4A90C2; margin-bottom:10px">02 · Standardise</div>
+            <h3 style="font-size:19px; font-weight:700; color:var(--ink); margin:0 0 12px; line-height:1.3; letter-spacing:-.01em">One schema. One truth.</h3>
+            <p style="font-size:14px; color:var(--text-soft); line-height:1.7; margin:0">Mapped every cadre to a unified standard — classifying under cadre families for rationalising the recruitment examination, replacing inconsistent formats with a single source of truth.</p>
+          </div>
+        </div>
+
+        <div class="step" style="transition-delay:360ms">
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 26px; height:100%; transition:border-color .2s, box-shadow .2s"
+               onmouseover="this.style.borderColor='rgba(79,155,110,.4)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+            <div style="width:48px; height:48px; border-radius:12px; background:rgba(79,155,110,.1); border:1px solid rgba(79,155,110,.25); display:flex; align-items:center; justify-content:center; margin-bottom:24px">
+              <svg style="width:22px; height:22px; fill:none; stroke:#4F9B6E; stroke-width:1.75; stroke-linecap:round" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="18"></rect><rect x="14" y="3" width="7" height="18"></rect></svg>
+            </div>
+            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:#4F9B6E; margin-bottom:10px">03 · Compare</div>
+            <h3 style="font-size:19px; font-weight:700; color:var(--ink); margin:0 0 12px; line-height:1.3; letter-spacing:-.01em">Filter. Search. Compare.</h3>
+            <p style="font-size:14px; color:var(--text-soft); line-height:1.7; margin:0">Enabled the first-ever side-by-side comparison of any two cadres — with multi-filter drill-down, full-text search, RR analysis charts, and Word/Excel export.</p>
+          </div>
+        </div>
+
+        <div class="step" style="transition-delay:540ms">
+          <div style="background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:32px 26px; height:100%; transition:border-color .2s, box-shadow .2s"
+               onmouseover="this.style.borderColor='rgba(139,126,200,.4)';this.style.boxShadow='var(--shadow-md)'" onmouseout="this.style.borderColor='var(--border)';this.style.boxShadow='none'">
+            <div style="width:48px; height:48px; border-radius:12px; background:rgba(139,126,200,.1); border:1px solid rgba(139,126,200,.25); display:flex; align-items:center; justify-content:center; margin-bottom:24px">
+              <svg style="width:22px; height:22px; fill:none; stroke:#8B7EC8; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round" viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+            <div style="font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.12em; color:#8B7EC8; margin-bottom:10px">04 · Generate</div>
+            <h3 style="font-size:19px; font-weight:700; color:var(--ink); margin:0 0 12px; line-height:1.3; letter-spacing:-.01em">Draft new RRs from the standard.</h3>
+            <p style="font-size:14px; color:var(--text-soft); line-height:1.7; margin:0">Generate fresh Recruitment Rules directly from the standardised cadre data — using cadre profiles, exam bucket classification, and pay scale mapping as the foundation.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ STATS ══════════ -->
+  <section data-section="stats" style="padding:100px 24px; background:#FAF9F6">
+    <div style="max-width:1000px; margin:0 auto">
+      <div style="text-align:center; margin-bottom:64px">
+        <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.13em; color:#F26522; margin-bottom:14px">The Outcome</div>
+        <h2 style="font-size:clamp(28px, 4.5vw, 42px); font-weight:900; color:#141414; line-height:1.15; margin:0; letter-spacing:-.02em">The numbers tell the story</h2>
+      </div>
+
+      <div class="stats-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:16px">
+        <div style="background:#fff; border:1px solid #E5E3DF; border-radius:14px; padding:32px 20px; text-align:center; box-shadow:0 2px 8px rgba(20,20,20,.06)">
+          <div id="stat-cadres" style="font-size:clamp(40px, 5vw, 60px); font-weight:900; color:#141414; letter-spacing:-.04em; line-height:1; margin-bottom:8px; font-variant-numeric:tabular-nums">0</div>
+          <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:#9A9A9A; margin-bottom:8px">Service Cadres</div>
+          <div style="font-size:12.5px; color:#5C5C5C">Digitised from paper files</div>
+        </div>
+        <div style="background:#fff; border:1px solid #E5E3DF; border-radius:14px; padding:32px 20px; text-align:center; box-shadow:0 2px 8px rgba(20,20,20,.06)">
+          <div id="stat-depts" style="font-size:clamp(40px, 5vw, 60px); font-weight:900; color:#141414; letter-spacing:-.04em; line-height:1; margin-bottom:8px; font-variant-numeric:tabular-nums">0</div>
+          <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:#9A9A9A; margin-bottom:8px">Departments</div>
+          <div style="font-size:12.5px; color:#5C5C5C">All visible in one place</div>
+        </div>
+        <div style="background:#fff; border:1px solid #E5E3DF; border-radius:14px; padding:32px 20px; text-align:center; box-shadow:0 2px 8px rgba(20,20,20,.06)">
+          <div id="stat-estab" style="font-size:clamp(40px, 5vw, 60px); font-weight:900; color:#141414; letter-spacing:-.04em; line-height:1; margin-bottom:8px; font-variant-numeric:tabular-nums">0</div>
+          <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:#9A9A9A; margin-bottom:8px">Establishments</div>
+          <div style="font-size:12.5px; color:#5C5C5C">Covered</div>
+        </div>
+        <div style="background:var(--saffron-pale); border:1px solid rgba(242,101,34,.22); border-left:4px solid #F26522; border-radius:14px; padding:32px 20px; text-align:center; box-shadow:0 2px 8px rgba(90,60,30,.06)">
+          <div style="font-size:clamp(40px, 5vw, 60px); font-weight:900; color:#F26522; letter-spacing:-.04em; line-height:1; margin-bottom:8px; font-variant-numeric:tabular-nums"><span id="stat-pct">0</span><span style="font-size:.4em; vertical-align:super; font-weight:700">%</span></div>
+          <div style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--saffron-hover); margin-bottom:8px">RRs Changed</div>
+          <div style="font-size:12.5px; color:var(--text)">Cadres with updated RRs</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CTA ══════════ -->
+  <section style="padding:110px 24px; background:#F26522; text-align:center; position:relative; overflow:hidden">
+    <div style="position:absolute; inset:0; background-image:radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px); background-size:24px 24px; pointer-events:none"></div>
+    <div style="position:relative; z-index:1; max-width:600px; margin:0 auto">
+      <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.15em; color:rgba(255,255,255,.65); margin-bottom:18px">Live Now</div>
+      <h2 style="font-size:clamp(28px, 5vw, 46px); font-weight:900; color:#FFFFFF; line-height:1.15; margin:0 0 18px; letter-spacing:-.02em">The dashboard is open.<br>Explore the data.</h2>
+      <p style="font-size:16px; color:rgba(255,255,255,.72); line-height:1.7; margin:0 0 40px">Filter by department, group, pay scale, or RR status. Search any of <span class="live-cadres">1,167</span> cadres. Compare side by side. Export to Excel or Word annexure. Create new RRs from the standardised dataset.</p>
+      <a href="dashboard.html" style="display:inline-flex; align-items:center; gap:10px; background:#FFFFFF; color:#F26522; font-size:15px; font-weight:700; padding:16px 36px; border-radius:12px; letter-spacing:-.01em; box-shadow:0 8px 40px rgba(0,0,0,.18); transition:all .2s"
+         onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 14px 50px rgba(0,0,0,.24)'"
+         onmouseout="this.style.transform='none';this.style.boxShadow='0 8px 40px rgba(0,0,0,.18)'">
+        Open the Cadre Reforms Dashboard →
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════ FOOTER ══════════ -->
+  <footer style="background:var(--bg-alt); padding:28px 24px; text-align:center; border-top:1px solid var(--border)">
+    <div style="font-size:10.5px; color:var(--text-soft); letter-spacing:.08em; text-transform:uppercase">General Administration Department · Government of Maharashtra · Cadre Reform Initiative</div>
+  </footer>
+
+</div>
+
+<script>
+// ── Hero entrance ──
+window.addEventListener('load', () => setTimeout(() => document.body.classList.add('loaded'), 180));
+
+// ── Chaos → order bars ──
+(function () {
+  const rowsEl = document.getElementById('chaosRows');
+  const docsData = [
+    { dx: 64, dy: -82, dr: -11 }, { dx: -108, dy: -54, dr: 14 }, { dx: 136, dy: 28, dr: -7 },
+    { dx: -84, dy: 58, dr: 10 }, { dx: 148, dy: -36, dr: -8 }, { dx: -124, dy: 98, dr: 12 },
+    { dx: 76, dy: 126, dr: -9 }, { dx: -64, dy: -118, dr: 11 }, { dx: 114, dy: -94, dr: -6 },
+    { dx: -144, dy: 42, dr: 9 },
+  ];
+  const chaos = ['#D4956A','#8B9DC3','#C5B864','#9BC89B','#C4A8D4','#B8C4A8','#D4A8A8','#A8C4C4','#C4B8A8','#A8B8D4'];
+  const sc = ['#F26522','#4F9B6E','#4A90C2','#F26522','#4F9B6E','#4A90C2','#F26522','#4F9B6E','#4A90C2','#F26522'];
+  const sl = ['Changed','No Change','GAD Rules','Changed','No Change','GAD Rules','Changed','No Change','GAD Rules','Changed'];
+
+  docsData.forEach((d, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'cbar';
+    bar.style.top = (i * 30 + 6) + 'px';
+    bar.style.transform = `translate(${d.dx}px,${d.dy}px) rotate(${d.dr}deg)`;
+    bar.style.background = chaos[i];
+    bar.style.transitionDelay = (i * 60) + 'ms';
+    bar.style.zIndex = String(12 - i);
+    bar.innerHTML =
+      '<div class="rowc">' +
+        `<span style="font-size:10px;color:#B0B0B0;width:18px;text-align:center;flex-shrink:0">${i+1}</span>` +
+        '<div style="width:82px;height:8px;border-radius:3px;background:#EEECE7;flex-shrink:0"></div>' +
+        '<div style="flex:1;height:8px;border-radius:3px;background:#EEECE7"></div>' +
+        '<div style="width:68px;height:8px;border-radius:3px;background:#EEECE7;flex-shrink:0"></div>' +
+        `<span style="padding:2px 9px;border-radius:99px;background:${sc[i]}18;border:1px solid ${sc[i]}33;color:${sc[i]};font-size:9.5px;font-weight:700;flex-shrink:0;white-space:nowrap">${sl[i]}</span>` +
+      '</div>';
+    rowsEl.appendChild(bar);
+  });
+})();
+
+// ── Scroll observers ──
+function observe(sel, cb, threshold) {
+  const el = document.querySelector(sel);
+  if (!el) return;
+  const obs = new IntersectionObserver((entries) => {
+    if (entries[0].isIntersecting) { cb(); obs.disconnect(); }
+  }, { threshold: threshold || 0.2 });
+  obs.observe(el);
+}
+
+observe('[data-section="chaos"]', () => {
+  setTimeout(() => document.getElementById('chaosCard').classList.add('ordered'), 420);
+}, 0.3);
+
+observe('[data-section="steps"]', () => {
+  document.querySelectorAll('.step').forEach(s => s.classList.add('in'));
+}, 0.2);
+
+// ── Live stats (read from the same Google Sheet as the dashboard) ──
+// Defaults double as a fallback if the fetch fails.
+const STATS = { cadres: 1167, depts: 44, estab: 101, pct: 63 };
+let statsAnimated = false;
+
+function countTo(id, target, duration, fmt) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const start = performance.now();
+  const ease = t => 1 - Math.pow(1 - t, 3);
+  function tick(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const v = Math.round(target * ease(t));
+    el.textContent = fmt ? v.toLocaleString('en-IN') : v;
+    if (t < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+function setText(sel, val) { document.querySelectorAll(sel).forEach(el => el.textContent = val); }
+
+function paintProse() {
+  setText('.live-cadres', STATS.cadres.toLocaleString('en-IN'));
+  setText('.live-depts', STATS.depts.toLocaleString('en-IN'));
+}
+
+function runStatsAnimation() {
+  statsAnimated = true;
+  countTo('stat-cadres', STATS.cadres, 1800, true);
+  setTimeout(() => countTo('stat-depts', STATS.depts, 1400), 80);
+  setTimeout(() => countTo('stat-estab', STATS.estab, 1500), 160);
+  setTimeout(() => countTo('stat-pct', STATS.pct, 1600), 240);
+}
+
+observe('[data-section="stats"]', runStatsAnimation, 0.2);
+
+// ── Data source (mirrors index.html) ──
+const SHEET_ID = '1I_0wzk6IYlAI0G-4vCTLoq7dWPk57ZBIaO-AH-Wqs00';
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=0`;
+
+function str(v) {
+  if (v === null || v === undefined) return '';
+  if (v instanceof Date) return v.toLocaleDateString('en-IN');
+  return String(v).trim();
+}
+function col(r, ...keys) {
+  for (const k of keys) if (r[k] !== undefined && r[k] !== null && r[k] !== '') return str(r[k]);
+  const norm = s => s.replace(/[\n\r\t]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  for (const k of keys) {
+    const target = norm(k);
+    for (const rk of Object.keys(r)) if (norm(rk) === target) return str(r[rk]);
+  }
+  return '';
+}
+function classifyRR(val) {
+  if (!val) return 'Unknown';
+  const v = val.trim();
+  if (!v) return 'Unknown';
+  if (v === 'No changes in RR' || v === 'Mode of Recruitment: Internal Promotion') return 'No Change';
+  if (v.includes('GAD') || v === 'Recruitment rules issued by GAD to be followed for this cadre.') return 'GAD Rules Apply';
+  return 'Changed';
+}
+
+async function loadLiveStats() {
+  try {
+    const res = await fetch(SHEET_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const wb = XLSX.read(await res.text(), { type: 'string' });
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const raw = XLSX.utils.sheet_to_json(ws, { defval: '' });
+    const rows = raw.map(r => ({
+      Department:     col(r, 'Departments', 'Department'),
+      Establishment:  col(r, 'Establishment'),
+      RRChangeStatus: classifyRR(col(r, 'RR Details (After Reforms)')),
+    }));
+    if (!rows.length) return;
+
+    const cadres = rows.length;
+    const depts  = new Set(rows.map(r => r.Department).filter(Boolean)).size;
+    const estab  = new Set(rows.map(r => r.Establishment).filter(Boolean)).size;
+    const acted  = rows.filter(r => r.RRChangeStatus === 'Changed' || r.RRChangeStatus === 'GAD Rules Apply').length;
+    const pct    = cadres ? Math.round(acted / cadres * 100) : 0;
+
+    STATS.cadres = cadres; STATS.depts = depts; STATS.estab = estab; STATS.pct = pct;
+    paintProse();
+
+    // If the stat cards already animated (user scrolled before fetch finished), snap to live values.
+    if (statsAnimated) {
+      document.getElementById('stat-cadres').textContent = cadres.toLocaleString('en-IN');
+      document.getElementById('stat-depts').textContent  = depts;
+      document.getElementById('stat-estab').textContent  = estab;
+      document.getElementById('stat-pct').textContent    = pct;
+    }
+  } catch (err) {
+    console.warn('Landing: live stats fetch failed, using fallback values.', err);
+  }
+}
+loadLiveStats();
+
+// ── Hero product showcase (auto-cycling, hover-pausable, reduced-motion aware) ──
+(function () {
+  const root = document.getElementById('showcase');
+  if (!root) return;
+
+  const slides = [...root.querySelectorAll('.slide')];
+  const navs   = [...root.querySelectorAll('.nav-item')];
+  const fills  = navs.map(n => n.querySelector('.nav-fill'));
+  const DUR    = 6200;
+  const REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let idx = -1, timer = null, paused = false, typeTimer = null;
+
+  function scCount(el, target, dur, intl) {
+    if (!el) return;
+    if (REDUCED) { el.textContent = intl ? target.toLocaleString('en-IN') : target; return; }
+    const start = performance.now(), ease = t => 1 - Math.pow(1 - t, 3);
+    (function tick(now) {
+      const t = Math.min((now - start) / dur, 1), v = Math.round(target * ease(t));
+      el.textContent = intl ? v.toLocaleString('en-IN') : v;
+      if (t < 1) requestAnimationFrame(tick);
+    })(performance.now());
+  }
+
+  function typeSearch() {
+    const el = document.getElementById('sc-search');
+    if (!el) return;
+    const text = 'Deputy Collector, Revenue';
+    clearTimeout(typeTimer);
+    if (REDUCED) { el.textContent = text; return; }
+    el.textContent = '';
+    let i = 0;
+    (function step() {
+      el.textContent = text.slice(0, i++);
+      if (i <= text.length) typeTimer = setTimeout(step, 62);
+    })();
+  }
+
+  function animateRing(el, target) {
+    if (!el) return;
+    const val = el.querySelector('i');
+    if (REDUCED) {
+      el.style.background = `conic-gradient(var(--mr-accent) ${target}%, rgba(33,29,24,.10) 0)`;
+      if (val) val.textContent = target + '%';
+      return;
+    }
+    const start = performance.now(), dur = 1200, ease = t => 1 - Math.pow(1 - t, 3);
+    (function tick(now) {
+      const t = Math.min((now - start) / dur, 1), p = Math.round(target * ease(t));
+      el.style.background = `conic-gradient(var(--mr-accent) ${p}%, rgba(33,29,24,.10) 0)`;
+      if (val) val.textContent = p + '%';
+      if (t < 1) requestAnimationFrame(tick);
+    })(performance.now());
+  }
+
+  const inits = [
+    function initRepo() {
+      scCount(document.getElementById('sc-cad'), (typeof STATS !== 'undefined' ? STATS.cadres : 1167), 1600, true);
+      scCount(document.getElementById('sc-dep'), (typeof STATS !== 'undefined' ? STATS.depts  : 44), 1300, false);
+      scCount(document.getElementById('sc-est'), (typeof STATS !== 'undefined' ? STATS.estab  : 101), 1400, false);
+      typeSearch();
+    },
+    null,   // slide 2 — pure CSS entrance
+    null,   // slide 3 — pure CSS entrance
+    function initMonitor() {
+      root.querySelectorAll('.mon-card').forEach(card => {
+        scCount(card.querySelector('.mon-vac b'), +card.dataset.vac, 1100, false);
+        const bar = card.querySelector('.mon-bar span'), req = +card.dataset.req;
+        if (bar) { bar.style.width = '0%'; requestAnimationFrame(() => { bar.style.width = req + '%'; }); }
+        animateRing(card.querySelector('.mon-ring'), +card.dataset.ros);
+      });
+    }
+  ];
+
+  function resetFills() { fills.forEach(f => { if (f) { f.style.transition = 'none'; f.style.width = '0%'; } }); }
+  function runFill(i) {
+    const f = fills[i]; if (!f) return;
+    f.style.transition = 'none'; f.style.width = '0%'; void f.offsetWidth;
+    if (REDUCED) { f.style.width = '100%'; return; }
+    f.style.transition = `width ${DUR}ms linear`; f.style.width = '100%';
+  }
+
+  function schedule() {
+    clearTimeout(timer);
+    if (paused) return;
+    timer = setTimeout(() => go((idx + 1) % slides.length), DUR);
+  }
+
+  function go(i) {
+    if (i === idx) return;
+    idx = i;
+    clearTimeout(typeTimer);
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    navs.forEach((n, k) => n.classList.toggle('active', k === i));
+    resetFills();
+    runFill(i);
+    if (inits[i]) inits[i]();
+    schedule();
+  }
+
+  navs.forEach((n, k) => n.addEventListener('click', () => go(k)));
+
+  root.addEventListener('mouseenter', () => {
+    paused = true;
+    clearTimeout(timer);
+    const f = fills[idx];
+    if (f) { const w = getComputedStyle(f).width; f.style.transition = 'none'; f.style.width = w; }
+  });
+  root.addEventListener('mouseleave', () => {
+    paused = false;
+    runFill(idx);
+    schedule();
+  });
+
+  const startMatch = (location.hash || '').match(/^#f([1-4])$/);
+  go(startMatch ? (+startMatch[1] - 1) : 0);
+})();
+</script>
+</body>
+</html>

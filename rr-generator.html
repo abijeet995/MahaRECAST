@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Maharashtra RR Generator</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Dashboard theme: remap Tailwind blue scale -> orange/near-black, Poppins font -->
+<script>
+tailwind.config = { theme: { extend: {
+  colors: { blue: { 50:'#FFF0E8', 100:'#FFF0E8', 200:'#F4956A', 300:'#F4956A',
+                    500:'#F26522', 600:'#F26522', 700:'#DA5714', 800:'#141414', 900:'#141414' } },
+  fontFamily: { sans: ['"Poppins"','system-ui','sans-serif'] }
+} } }
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body, button, input, select, textarea { font-family: 'Poppins', system-ui, sans-serif; }
+</style>
+</head>
+<body class="bg-gray-50"><div id="root"></div>
+<script type="text/babel">
+const {useState}=React;
+
+const DEPT_DATA=[
+  {name:"Agriculture Department",address:"",establishments:["Agriculture"]},
+  {name:"Animal Husbandry, Dairy Development and Fisheries Department",address:"",establishments:["Animal Husbandry","Fisheries"]},
+  {name:"Co-operation, Marketing and Textiles Department",address:"",establishments:["Cooperative","Sericulture Directorate","Textile Directorate"]},
+  {name:"Cultural Affairs Department",address:"",establishments:["Directorate of Archaeology & Museums","Directorate of Archives","Directorate of Cultural Affairs","Gazetteer Department","Maharashtra State Hindi, Sindhi, Gujarati, Sanskrit, Telugu, Bengali and Gorbanjara Sahitya Akademi","P. L. Deshpande Maharashtra Kala Academy","Stage Performances Scrutiny Board"]},
+  {name:"Finance Department",address:"",establishments:["Directorate of Accounts & Treasuries","Directorate of Insurance","Directorate of Local Fund Accounts Audit","GST"]},
+  {name:"Food, Civil Supplies and Consumer Protection Department",address:"",establishments:["Controller of Legal Metrology","Controller of Rationing and Director Civil Supplies","Financial Adviser and Deputy Secretary","Office of the Commissioner of Supply","State Consumer Disputes Redressal Commission"]},
+  {name:"Forest Department",address:"",establishments:["Forest Department"]},
+  {name:"General Administration Department",address:"",establishments:["Department of Sainik Welfare, Pune","Directorate of Information and Public Relations","Government Transport Services","Mantralaya Canteen","Mantralaya Proper","Office of the Comptroller of Household to the Governor of Maharashtra","Office of the Resident Commissioner & Secretary, Maharashtra Sadan","Office of the Secretary to the Governor, Lok Bhavan Mumbai","Sahyadri And Nandgiri Guest House","Service Prepatory Institute, Chhatrapati Sambhajinagar and Nashik"]},
+  {name:"Higher and Technical Education Department",address:"",establishments:["Directorate of Art","Directorate of Higher Education","Directorate of Libraries","The Directorate of Technical Education"]},
+  {name:"Home Department",address:"",establishments:["Commandant General, Home Guards","Commissioner State Excise","Directorate of Civil Defence","Directorate of Forensic Science","Directorate of Prosecution","Director General of Police","Prisons and Correctional Services, State of Maharashtra","Transport"]},
+  {name:"Industry, Energy, Labour and Mining Department",address:"",establishments:["Directorate of Boiler","Directorate of Geology and Mining, Nagpur","Directorate of Government Printing, Stationery and Publication","Directorate of Industrial Safety and Health","Directorate of Industries","Energy","Labour Commissioner"]},
+  {name:"Law and Judiciary Department",address:"",establishments:["Government Pleader Offices Thirteen","Law and Judiciary Department","Office of Charity Commissioner, Maharashtra State, Mumbai","Office of Registrar of Partnership Firm","Office of the Administrator General and Official Trustee"]},
+  {name:"Marathi Language Department",address:"",establishments:["Directorate of Languages, Mumbai","Maharashtra Rajya Marathi Vishwakosh Nirmiti Mandala","Maharashtra State Board for Literature and Culture, Mumbai"]},
+  {name:"Medical Education and Drugs Department",address:"",establishments:["Directorate of Ayush","Food & Drugs Department","Medical Education and Research Mumbai"]},
+  {name:"Minority Development Department",address:"",establishments:["Maharashtra State Urdu Sahitya Academy","Maharashtra State Waqf Tribunal","Minority Commissionerate & Minorities Cell"]},
+  {name:"Other Backward Bahujan Welfare Department",address:"",establishments:["Directorate of Other Backward Bahujan Welfare, Pune"]},
+  {name:"Persons With Disabilities Welfare Department",address:"",establishments:["Commissionerate For Persons With Disabilities Welfare"]},
+  {name:"Planning Department",address:"",establishments:["Directorate of Economics and Statistics"]},
+  {name:"Public Health Department",address:"",establishments:["Employee's State Insurance Scheme","Public Health Commissionerate"]},
+  {name:"Public Works Department",address:"",establishments:["Administration-4, Public Works Department, Mantralaya, Mumbai","Chief Architect to Government","Director, Parks and Gardens","Directors Chawl Development Department, Mumbai","Public Works Department (Civil)","Superintending Engineer Electrical Establishment","Superintending Engineer (Mechanical Circle), New Mumbai"]},
+  {name:"Revenue Department",address:"",establishments:["Land Record","Registration and Stamps","Revenue"]},
+  {name:"Rural Development Department",address:"",establishments:["Maharashtra Development Services"]},
+  {name:"School Education Department",address:"",establishments:["School Education Commissionerate"]},
+  {name:"Skill Development Department",address:"",establishments:["Directorate of Vocational Education and Training & Allied Offices","Skill Development, Employment and Entrepreneurship Commissionerate"]},
+  {name:"Social Justice and Special Assistance Department",address:"",establishments:["Commissionerate of Social Welfare"]},
+  {name:"Soil and Water Conservation Department",address:"",establishments:["Soil and Water Conservation Commissionerate"]},
+  {name:"Sports Department",address:"",establishments:["Directorate of Sports and Youth Services","National Cadet Corps"]},
+  {name:"Tourism Department",address:"",establishments:["Directorate of Tourism"]},
+  {name:"Tribal Development Department",address:"",establishments:["Tribal Development Commissionerate"]},
+  {name:"Urban Development Department",address:"",establishments:["Chief Officer","Directorate of Maharashtra Fire & Emergency Services","Directorate of Municipal Administration","Town Planning and Valuation Directorate"]},
+  {name:"Water Resource Department",address:"",establishments:["Water Resources"]},
+  {name:"Water Supply and Sanitation Department",address:"",establishments:["Ground Water Survey And Development Agency"]},
+  {name:"Women and Child Development Department",address:"",establishments:["Commissioner, Women and Child, Pune & Commissioner, Integrated Child Development Service Scheme, New Mumbai"]},
+];
+
+const POST_LIST=["Accountant","Accountant (Clerk)","Accounts Clerk","Accounts Officer","Additional Director","Additional Public Prosecutor","Administrative Medical Officer","Administrative Officer","Administrative Officers","Aero Modeling Instructor","Agriculture officer (Zilla Parishad) Grade B (Junior) (Gazetted)","Anaesthesiologist","Architect","Artist","Assistant","Assistant (Legal)","Assistant Accounts Officer","Assistant Administrative Officer","Assistant Agriculture Officer","Assistant Auto Electrician","Assistant Block Development Officer","Assistant Charity Commissioner","Assistant Chemical Analyser","Assistant Chemist","Assistant Commissioner","Assistant Commissioner (Technical)","Assistant Commissioner Of Fisheries (Tech.)","Assistant Commissioner of Labour","Assistant Commissioner of State Tax","Assistant Commissioner, Animal husbandry","Assistant Commissioner, Social Welfare","Assistant Conservator of Forest","Assistant Controller of rationing","Assistant Co-operative Officer","Assistant Deputy Controller","Assistant Director","Assistant Director (Cyber Crime, Tape Authentication & Speaker Identification)","Assistant Director (NT) / Registrar","Assistant Director (Psychology)","Assistant Director / District Sports Officer","Assistant Director AYUSH","Assistant Director of Insurance","Assistant Director of Languages","Assistant Director of Libraries / District Library Officer","Assistant Director Parks And Garden","Assistant Draftsman","Assistant Drilling Engineer","Assistant Electrical Inspector","Assistant Electrician","Assistant Engineer","Assistant Engineer Grade 2","Assistant Engineer Grade 2 (Civil)","Assistant Engineer Grade 2 (Electrical)","Assistant Engineer Grade I","Assistant Engineer Grade I (Civil)","Assistant Engineer Grade II","Assistant Executive Engineer","Assistant Executive Engineer (Civil)","Assistant Fisheries Development Officer","Assistant Forest Statistics","Assistant Garden Supervisor","Assistant Geologist","Assistant Geophysicist","Assistant Inspector of Drawing and Crafts","Assistant Lecturer","Assistant Librarian","Assistant Manager","Assistant Mechanic","Assistant Motor Vehicle Inspector","Assistant Pharmacist (Ayurveda)","Assistant Pharmacist (Chemist-cum- Pharmacist)","Assistant Professor","Assistant Professor (Ayurveda)","Assistant Professor (Homeopathy)","Assistant Professor (Unani)","Assistant Professor (Yoga Naturopathy)","Assistant Professor, Government Colleges of Pharmacy","Assistant Professor, Govt. College of Engineering","Assistant Project Officer (AE)","Assistant Project Officer (Education)","Assistant Public Prosecutor","Assistant Regional Transport Officer","Assistant Registrar","Assistant Registrar of Firms","Assistant Research Officer","Assistant Secretary","Assistant Section Officer","Assistant Sports Development Officer","Assistant Store Keeper","Assistant Superintendent","Assistant Town Planner","Associate Professor","Associate Professor (Ayurveda)","Associate Professor (Homeopathy)","Associate Professor (Unani)","Associate Professor (Yoga Naturopathy)","Associate Professor, Government Colleges of Pharmacy","Associate Professor, Govt. College of Engineering","Auditor Grade - 1","Auditor Grade - 2","Auto Electrician","Block Development Officer","Boiler Attendant","Braille Instructor","Cadastral Surveyor","Camera Assistant","Canal Inspector","Casualty Medical Officer (S-16)","Casualty Medical Officer (S-20)","Certifying Surgeon","Chemist","Chief Administrative Officer","Chief Clerk","Chief Draftsman","Chief Drilling Engineer","Chief Librarian","Chief Sports Executive Officer","Child Psychologist","Civil Engineer Assistant","Civil Judge Junior Division and Judicial Magistrate First Class","Clerk","Clerk / Typist","Clerk-cum-Typist","Clerk-cum-Typist BOM","Clerk-cum-Typist NAG","Clinical Psychologist","Compounder","Computer Operator","Computer Programmer","Co-operative officer Grade 2","Co-operative officer Grade I","Cost Accountant","Craft Instructor / Trade Instructor","Dean (Yoga and Naturopathy)","Dean (Ayurveda)","Dean (Homoeopathy)","Demonstrator","Deputy Accountant / Head Clerk","Deputy Charity Commissioner","Deputy Collector","Deputy Controller","Deputy Director","Deputy Director (Cyber Crime, Tape Authentication & Speaker Identification)","Deputy Director (Exhibitions)","Deputy Director (Information)","Deputy Director (Medical)","Deputy Director (Psychology)","Deputy Director Homeopathy","Deputy Director of Industries (Technical)","Deputy Director of Languages (Legal)","Deputy Director of Languages (Translation & Terminology)","Deputy Director of Vocational Education and Training","Deputy Education Officer & equivalent","Deputy Engineer (Electrical)","Deputy Engineer (Mechanical)","Deputy Forest Engineer","Deputy Medical Superintendent (Ayurveda)","Deputy Registrar","Deputy Registrar, Co-operative Societies Group-A","Deputy Soil Survey Officer","Deputy Superintendent","Deputy Superintendent of Land Records","Deputy Superintendent of Police / Assistant Commissioner of Police (Unarmed)","Dietician","Director","Director of Art","Director of Higher Education","Director of Languages","Dispatch Rider","District AYUSH Officer","District Information Officer","Draftsman","Drill Instructor","Driller","Driller Mechanic","Drilling Engineer","Drug Manufacturer","DTP Operator","Education Officer & equivalent","Electric Technician","Electrical Inspector","Electrician","Electrician (Junior Grade)","Electricity Duty Inspector","Establishment Officer","Executive Engineer (Electrical)","Female Nurse","Field Assistant","Film Setter Operator","Fireman / Rescuer","Fisheries Development Officer And Others (Tech.)","Fodder Development Officers","Foreman","Forest Statistician","Forest Veterinary Officer","G.I.S. Assistant","G.I.S. Officer","G.I.S. Senior Assistant","Garden Supervisor","Gas Electric Welder","Geographical Information System Assistant","Geologist","Government Labour Officer","Gram Mahsul Adhikari","Hand Craft Instructor","Head Artist","Head Mechanic","Head of Department","Headmaster","Higher Grade Stenographer","Hostel Superintendent","House Master","House Physician","Industries Inspector","Industries Officer (Technical)","Inspector","Instructor (Bakery)","Instructor (Black Smith)","Instructor (Carpenter)","Instructor (Electrician)","Instructor (Fitter)","Instructor (Machinist)","Instructor (Masonry)","Instructor (Printing)","Instructor (Smithy)","Instructor (Tailoring)","Instructor (Weaving)","Instructor (Welder)","Investigator","Joint Charity Commissioner","Joint Director","Joint Director of Higher Education","Junior Accountant","Junior Administrative Officer","Junior Architect","Junior Auditor","Junior Chemist","Junior Clerk","Junior Draftsman","Junior Engineer","Junior Engineer (Civil)","Junior Engineer (Electrical)","Junior Engineer (Mechanical)","Junior Geologist","Junior Geophysicist","Junior Laboratory Assistant","Junior Lecturer","Junior Librarian","Junior Scientific Assistant","Junior Statistical Assistant","Junior Technical Assistant","Junior Technical Officer","Junior Translator and Interpreter","Lab Assistant","Lab Technician","Labor Welfare Officer","Laboratory Assistant","Laboratory Technician","Ladies Sports Officer","Language Officer (Hindi)","Law Officer","Lecturer","Legal Assistant","Librarian","Library Assistant","Library Attendant","Liner / Mounter","Live Stock Supervisor","Livestock Development Officer","Lower Grade Stenographer","Machinist","Maharashtra Agriculture Service Grade B (Junior) (Gazetted) (Agriculture Officer)","Maharashtra Agriculture Service Group A (Deputy Director)","Maharashtra Agriculture Service Group B (Technical Officer)","Male Nurse","Manager","Mechanical Engineer","Mechanic-cum-Technician","Medical Officer (Ayurveda)(S-16)","Medical Officer (Ayurveda)(S-20)","Medical Officer (Homeopathy)","Medical Officer (Yoga & Naturopathy)","Medical Superintendent (Unani)","Messenger","Midwife","Motor Vehicle Prosecutor","Museum Assistant","Museum Keeper","Naib Tahsildar","Nurse","Office Clerk","Office Superintendent","Officer on Special Duty","Overseer","Personal Assistant","Pharmacist","Pharmacist (Unani)","Photographer","Physical Education Director","Physical Education Instructor","Physical Training Instructor","Planning Assistant","Principal","Principal / Director","Principal, Government Colleges of Pharmacy","Principal, Government Technical College","Principal, Govt. Colleges of Engineering","Probation Officer","Process Operator","Professor","Professor (Ayurveda)","Professor (Homeopathy)","Professor (Unani)","Professor (Yoga Naturopathy)","Professor, Government Colleges of Pharmacy","Professor, Govt. College of Engineering","Programmer","PSI","Public Relation Officer","Radio Wireless Mechanic","Radio Wireless Operator","Range Forest Officer","Reader","Registrar","Research Assistant","Research Officer","Resident Medical Officer (Ayurveda)","Resident Medical Officer (Homeopathy)","Resident Medical Officer (Yoga & Naturopathy)","Revenue Assistant / Clerk-cum-Typist","Sanitary Inspector","Scholar Assistant","Science Supervisor (GE / MSCERT)","Scientific Assistant","Scientific Officer (Photography)","Scientific Officer (Psychology)","Secretary","Section Officer (Direct recruitment)","Security Officer","Senior Administrative Officer","Senior Assistant","Senior Biochemist","Senior Clerk","Senior Drilling Engineer","Senior Geologist","Senior Geophysicist","Senior Laboratory Assistant","Senior Lecturer","Senior Mechanical Engineer","Senior Medical Officer (Homeopathy)","Senior Research Officer","Senior Statistical Assistant","Senior Stenographer","Senior Survey Assistant","Sericulture Development Officer Grade 1","Skill Development, Employment & Entrepreneurship Guidance Officer","Social Welfare Inspector","Soil Survey Officer","Special Auditor, Co-operative Societies (Audit), Group -A","Special Auditor, Co-operative Societies (Audit), Group -B","Special Officer / Social Welfare Officer II","Sports Coach","Sports Development Officer","Sports Executive Officer","Sports Officer","Staff Nurse","State Tax Inspector","Statistical Assistant","Statistical Officer / Research Officer","Statistician","Steno (English)","Steno (Higher Grade)","Steno (Marathi)","Stenographer","Stenographer (Higher Grade)","Stenographer (Lower Grade)","Stenotypist","Sub Editor","Sub Registrar Grade 1","Sub-Inspector","Superintendent","Supervisor","Supervisor (Carpentry)","Supervisor (Leather)","Supervisor (Smithy)","Supervisor (Tailoring)","Supervisor (Weaving)","Surveyor","Swimming Coach-cum-Life Guard","T.V. Cameraman","Tahsildar","Tailor","Taluka Sports Officer","Tax Assistant","Teacher","Technical Assistant","Technical Officer","Telephone Operator","Textile Foreman","Textile inspector","Town Planner","Tracer","Translator","Translator (Hindi)","Translator (Marathi)","Tribal Development Inspector","Under Secretary (Law)","Upper Divisional Clerk","Warden","Water conservation officer (Civil)","Welder","Welfare Organiser","Wireless Operator","Wireless Technician","Wireman","Workshop Superintendent","X-Ray Assistant","X-Ray Technician","अधिपरिचारीका / Staff Nurse","अधिष्ठाता / Dean (Dental)","अधिष्ठाता / Dean (Medical)","अन्न सुरक्षा अधिकारी / Food Safety Officer","आहारतज्ञ / Dietician","ई.सी.जी. तंत्रज्ञ / E C G Technician","उप वैद्यकीय अधीक्षक / Deputy Medical Superintendent","औषध निरीक्षक / Drug Inspector","औषधनिर्माता / Pharmacist","कनिष्ठ लिपिक / Junior Clerk","क्ष किरण तंत्रज्ञ / X- Ray Technician","ग्रंथपाल / Librarian","ग्रंथालय सहाय्यक / Library Assistant","जीव रसायन शास्त्रज्ञ / Biochemist","डायलिसिस तंत्रज्ञ / Dialysis Technician","दंत शल्यचिकित्सक / Dental Surgeon","प्रयोगशाळा तंत्रज्ञ / Laboratory Technician","प्राध्यापक वैद्यकीय / Professor Medical","भौतिकोपचार तज्ञ / Physiotherapist","वैद्यकीय अधिकारी / Medical Officer","वैद्यकीय अधीक्षक / Medical Superintendent","सहाय्यक प्राध्यापक / Assistant Professor","सांख्यिकी सहायक / Statistical Assistant","स्वच्छता निरिक्षक / Sanitary Inspector"];
+
+const QUAL_SUBJECTS=["Electrical Engineering","Civil Engineering","Mechanical Engineering","Computer Engineering / Computer Science / Information Technology","Electronics & Telecommunication Engineering","Chemical Engineering / Chemical Technology","Environmental Engineering","Automobile Engineering","Mining Engineering","Construction Engineering / Construction Technology","Urban Planning / Regional Planning","Architecture / Architecture and Regional Planning","Printing Technology","Textile Technology / Handloom Technology","any branch of Engineering or Technology","Physics","Chemistry","Mathematics","Statistics / Applied Statistics / Biometry","Botany","Zoology","Biology / Life Sciences","Biochemistry / Organic Chemistry","Microbiology","Geology / Applied Geology","Geophysics / Applied Geophysics","Soil Science / Agricultural Chemistry","Agriculture / Horticulture / Agricultural Engineering","Forestry / Social Forestry","Fisheries (B.F.Sc.)","Veterinary Science and Animal Husbandry (B.V.Sc. & A.H.)","Sericulture / Silk Technology","Dairy Technology / Dairy Farm Management","Medicine (MBBS)","Ayurveda (B.A.M.S.)","Homeopathy (B.H.M.S.)","Unani (B.U.M.S.)","Yoga and Naturopathy (B.N.Y.S.)","Dental Surgery (B.D.S.)","Pharmacy (B.Pharm / B.Sc. Tech in Pharmaceutical and Fine Chemicals)","Nursing (B.Sc. Nursing / GNM / ANM)","Physiotherapy","Occupational Therapy","Paramedical Technology (Radiology / Laboratory / Blood Transfusion / Cardiology / Anaesthesia / Dialysis)","Medical Laboratory Technology (DMLT)","Arts (any subject)","Marathi","Hindi","Urdu","Sanskrit","Journalism / Mass Communication","Psychology / Clinical Psychology","Social Work / Social Welfare Administration / Tribal Welfare Administration","Sociology / Anthropology","Economics / Econometrics","Labour Studies / Industrial Relations / Human Resource Management","Commerce (any subject)","Commerce with Accountancy and Auditing","Business Administration (MBA / MMS) with Finance specialisation","Chartered Accountancy (CA) / Cost Accountancy (ICWA / CMA)","Law (L.L.B. / L.L.M.)","Education (B.Ed. / M.Ed.)","Library and Information Science (B.Lib.Sc. / M.Lib.Sc.)","Physical Education (B.P.Ed. / M.P.Ed.)","Fine Arts / Applied Arts / Drawing and Painting","Bamboo Handicraft Design or Industrial Product Design or Furniture Design","Diploma in Civil Engineering","Diploma in Mechanical Engineering","Diploma in Electrical Engineering","Diploma in Electronics Engineering","Diploma in Computer Engineering / Information Technology","Diploma in Pharmacy","Diploma in Agriculture","Diploma in Library Science","Diploma in Medical Laboratory Technology (DMLT)","Secondary School Certificate (SSC) Examination","Higher Secondary Certificate (HSC) Examination","ITI Certificate (Electrician / Fitter / Mechanic / Wireman / Carpenter / Welder / relevant trade)","any faculty from a statutory university (Arts / Science / Commerce / Law)"];
+
+const TECH_QUALS=["Government Commercial Certificate — Marathi Typewriting min. 30 wpm or English Typewriting min. 40 wpm","Computer Typing Certificate — Marathi Typewriting min. 30 wpm or English Typewriting min. 40 wpm","Government Commercial Certificate — Shorthand min. 120 wpm + Typewriting min. 40 wpm (English) or 30 wpm (Marathi)","Valid Supervisor's Certificate of Competency issued by the Licensing Board (Electrical Works)","Valid First Class Boiler Engineer's Certificate of Competency","Valid Wireman's Certificate issued by the Licensing Board, Public Works Department","Valid Driving Licence (Heavy Goods Vehicle and Heavy Passenger Motor Vehicle)","Certificate of passing examination in Auto-CAD or GIS from a recognised institution","Diploma or Certificate in Medical Laboratory Technology (DMLT) from a recognised institution","Certificate of Computer Operations (MSCIT or equivalent recognised by Government)","National Trade Certificate (NTC) or National Apprenticeship Certificate (NAC) in relevant trade","Registration under the Maharashtra Medical Council Act, 1965","Registration under the Maharashtra Veterinary Practitioners Act, 1971","Registration under the Pharmacy Act, 1948"];
+const TRANSFER_LEVELS=[{val:"state",label:"State Level",text:"anywhere in the State of Maharashtra"},{val:"divisional",label:"Divisional Level",text:"anywhere within the concerned Division"},{val:"board",label:"Board Level",text:"anywhere within the concerned Board area"},{val:"district",label:"District Level",text:"anywhere within the concerned District"},{val:"sub-divisional",label:"Sub-Divisional Level",text:"anywhere within the concerned Sub-Division"}];
+const SIGNATORIES=["Signatory 1 (Dummy)","Signatory 2 (Dummy)","Signatory 3 (Dummy)","Signatory 4 (Dummy)","Signatory 5 (Dummy)"];
+const DESIGNATIONS=["Additional Chief Secretary to Government","Principal Secretary to Government","Secretary to Government","Joint Secretary to Government","Deputy Secretary to Government","Under Secretary to Government"];
+const APPOINTING_AUTHORITIES=["Hon'ble Chief Minister, Government of Maharashtra","Hon'ble Governor of Maharashtra","Hon'ble Minister (Energy), Government of Maharashtra","Hon'ble Minister (Forests), Government of Maharashtra","Hon'ble Minister (Agriculture), Government of Maharashtra","Hon'ble Minister (Finance), Government of Maharashtra","Hon'ble Minister (Home), Government of Maharashtra","Hon'ble Minister (Public Works), Government of Maharashtra","Maharashtra Public Service Commission","Additional Chief Secretary to Government","Principal Secretary to Government","Secretary to Government"];
+const AGE_CAT_OPTIONS=[{label:"General / Unreserved",def:38},{label:"Other Backward Class (OBC)",def:41},{label:"Scheduled Caste (SC)",def:43},{label:"Scheduled Tribe (ST)",def:43},{label:"Economically Weaker Section (EWS)",def:38},{label:"Vimukta Jati (VJ/DT)",def:43},{label:"Nomadic Tribe (NT-B / NT-C / NT-D)",def:43},{label:"Special Backward Class (SBC)",def:43},{label:"Ex-Servicemen",def:48},{label:"Persons with Disability (PwD)",def:43},{label:"Ex-Servicemen (Backward Class)",def:53}];
+const LDE_BODIES=["Maharashtra Public Service Commission","Department / Office of the Appointing Authority","General Administration Department, Government of Maharashtra"];
+const YEAR_OPTIONS=Array.from({length:10},(_,i)=>String(2026+i));
+
+const MODES=[
+  {val:"promotion",label:"Promotion Only",flags:{P:1,D:0,N:0,L:0},ratioKeys:[]},
+  {val:"deputation",label:"Deputation Only",flags:{P:0,D:1,N:0,L:0},ratioKeys:[]},
+  {val:"nomination",label:"Nomination Only",flags:{P:0,D:0,N:1,L:0},ratioKeys:[]},
+  {val:"promotion_deputation",label:"Promotion + Deputation",flags:{P:1,D:1,N:0,L:0},ratioKeys:["promotionRatio","deputationRatio"]},
+  {val:"promotion_nomination",label:"Promotion + Nomination",flags:{P:1,D:0,N:1,L:0},ratioKeys:["promotionRatio","nominationRatio"]},
+  {val:"deputation_nomination",label:"Deputation + Nomination",flags:{P:0,D:1,N:1,L:0},ratioKeys:["deputationRatio","nominationRatio"]},
+  {val:"all",label:"Promotion + Deputation + Nomination",flags:{P:1,D:1,N:1,L:0},ratioKeys:["promotionRatio","deputationRatio","nominationRatio"]},
+  {val:"promotion_lde_nomination",label:"Promotion + LDE + Nomination",flags:{P:1,D:0,N:1,L:1},ratioKeys:["promotionRatio","ldeRatio","nominationRatio"]},
+];
+const RATIO_LABELS={promotionRatio:"Promotion (%)",deputationRatio:"Deputation (%)",nominationRatio:"Nomination (%)",ldeRatio:"LDE (%)"};
+function modeFlags(v){return(MODES.find(m=>m.val===v)||MODES[4]).flags;}
+function modeRatioKeys(v){return(MODES.find(m=>m.val===v)||MODES[4]).ratioKeys;}
+
+// ── NEW: number-to-words for age limit output (PDF-prescribed syntax) ─────────
+const NUM_WORDS={1:"one",2:"two",3:"three",4:"four",5:"five",6:"six",7:"seven",8:"eight",9:"nine",10:"ten",11:"eleven",12:"twelve",13:"thirteen",14:"fourteen",15:"fifteen",16:"sixteen",17:"seventeen",18:"eighteen",19:"nineteen",20:"twenty",21:"twenty-one",22:"twenty-two",23:"twenty-three",24:"twenty-four",25:"twenty-five",26:"twenty-six",27:"twenty-seven",28:"twenty-eight",29:"twenty-nine",30:"thirty",31:"thirty-one",32:"thirty-two",33:"thirty-three",34:"thirty-four",35:"thirty-five",36:"thirty-six",37:"thirty-seven",38:"thirty-eight",39:"thirty-nine",40:"forty",41:"forty-one",42:"forty-two",43:"forty-three",44:"forty-four",45:"forty-five",46:"forty-six",47:"forty-seven",48:"forty-eight",49:"forty-nine",50:"fifty",51:"fifty-one",52:"fifty-two",53:"fifty-three",54:"fifty-four",55:"fifty-five",56:"fifty-six",57:"fifty-seven",58:"fifty-eight"};
+function numWords(n){return NUM_WORDS[n]||String(n);}
+
+const defaultData={
+  rrType:"superseding",existingNotifNo:"",existingNotifDate:"",
+  deptName:"",establishment:"",notifDate:"",ruleYear:"2026",
+  signatoryName:"",signatoryDesignation:"",
+  posts:[{name:"",group:"A",gazetted:true,feederPost:"",feederYears:3,recruitingBody:"commission"}],
+  defDegreeSubject:"",defTechnicalQual:"",defAppointingAuth:"",
+  appointmentMode:"promotion_nomination",
+  promotionRatio:80,nominationRatio:20,deputationRatio:10,ldeRatio:10,
+  promotionHasDeptExam:false,promotionDeptExamName:"",
+  ageLowerLimit:18,
+  ageCategories:[{label:"General / Unreserved",max:38},{label:"Other Backward Class (OBC)",max:41},{label:"Scheduled Caste (SC)",max:43},{label:"Scheduled Tribe (ST)",max:43}],
+  eduQualType:"degree",eduQualSubject:"",eduEquivalent:true,
+  eduQuals:[{type:"degree",subjects:[{value:"",customText:""}],subjectConnectors:[],itiField:"",includeEquivalence:true}],
+  eduQualConnectors:[],
+  hasPhysicalEligibility:false,physicalHeight:"",physicalChest:"",physicalVision:"",
+  hasTechnicalQualNomination:false,
+  hasExperience:false,experienceYears:5,experienceDesc:"",experienceNote:"",
+  deputationSource:"",deputationPeriod:3,
+  ldeEligiblePost:"",ldeMinService:5,ldeExamBody:"Maharashtra Public Service Commission",
+  hasDeptExam:false,deptExamPurpose:"confirmation",deptExamName:"",
+  probationVariant:"standard",probationYears:2,probationExtension:1,
+  languageExam:true,computerCert:true,isCPTP:false,
+  smallFamily:true,transferLevel:"state",separateSeniorityForPromotion:false,
+  hasCompassionate:false,otherRules:true,additionalProvisions:"",ruleName:"",
+  // ── NEW fields from PDF ───────────────────────────────────────────────────
+  hasScheduleDef:false,
+  hasUniversityDef:false,
+  hasPostGradDef:false,
+  hasRecognisedInstitutionDef:false,
+  hasRecognisedSchoolDef:false,
+  hasCompassionateMode:false,
+  hasPermanentCadreTransfer:false,
+  cadreTransferFromPost:"",
+  cadreTransferGroup:"C",
+  cadreTransferMinYears:3,
+  drafterName:"",
+  drafterDesignation:"",
+};
+
+function computeRuleNums(d){
+  const flags=modeFlags(d.appointmentMode);
+  const multi=modeRatioKeys(d.appointmentMode).length>0;
+  let n=4;const R={};
+  if(multi)R.ratio=n++;
+  if(d.hasDeptExam)R.deptExam=n++;
+  if(flags.N||flags.D||flags.L)R.probation=n++;
+  if(d.languageExam)R.language=n++;
+  if(d.computerCert)R.computer=n++;
+  if(d.smallFamily)R.smallFamily=n++;
+  R.transfer=n++;
+  if(d.otherRules)R.otherRules=n++;
+  if(d.additionalProvisions)R.additional=n++;
+  return R;
+}
+
+const ic="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white";
+const lc="block text-xs font-semibold text-gray-600 mb-1 uppercase tracking-wide";
+const sc="bg-white rounded-xl border border-gray-200 p-5 mb-4 shadow-sm";
+function F({label,hint,children}){return(<div className="mb-4">{label&&<label className={lc}>{label}</label>}{hint&&<p className="text-xs text-gray-400 mb-1">{hint}</p>}{children}</div>);}
+function Sel({label,hint,value,onChange,options,placeholder}){return(<F label={label} hint={hint}><select className={ic} value={value} onChange={e=>onChange(e.target.value)}><option value="">{placeholder||"— Select —"}</option>{options.map((o,i)=><option key={i} value={typeof o==="string"?o:o.value}>{typeof o==="string"?o:o.label}</option>)}</select></F>);}
+function SearchInput({label,hint,value,onChange,listId}){return(<F label={label} hint={hint}><input className={ic} list={listId} placeholder="Type to search…" value={value} onChange={e=>onChange(e.target.value)}/><datalist id={listId}>{POST_LIST.map((p,i)=><option key={i} value={p}/>)}</datalist></F>);}
+function Slide({label,hint,value,min,max,step=1,onChange,unit="yrs"}){return(<F label={label} hint={hint}><div className="flex items-center gap-3"><span className="text-xs text-gray-400 w-8 shrink-0">{min}{unit}</span><input type="range" min={min} max={max} step={step} value={value} onChange={e=>onChange(Number(e.target.value))} className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"/><span className="text-sm font-bold text-blue-700 w-16 text-right shrink-0">{value} {unit}</span></div></F>);}
+function Toggle({label,checked,onChange,hint}){return(<div className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"><div><div className="text-sm font-medium text-gray-700">{label}</div>{hint&&<div className="text-xs text-gray-400">{hint}</div>}</div><button onClick={()=>onChange(!checked)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked?"bg-blue-600":"bg-gray-300"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${checked?"translate-x-6":"translate-x-1"}`}/></button></div>);}
+function Badge({color,children}){const m={blue:"bg-blue-100 text-blue-700",green:"bg-green-100 text-green-700",orange:"bg-orange-100 text-orange-700",purple:"bg-purple-100 text-purple-700",pink:"bg-pink-100 text-pink-700",gray:"bg-gray-100 text-gray-700",red:"bg-red-100 text-red-700"};return <span className={`${m[color]||m.blue} text-xs font-bold px-2 py-0.5 rounded`}>{children}</span>;}
+
+// ── STEP 1 ────────────────────────────────────────────────────────────────────
+function Step1({d,set}){
+  const dept=DEPT_DATA.find(x=>x.name===d.deptName);
+  const postName=(d.posts[0]&&d.posts[0].name)||"";
+  const setPostName=v=>{const p=[...d.posts];p[0]={...p[0],name:v};set("posts",p);};
+  return(<div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-4">Department & Office</h3>
+      <Sel label="Department" value={d.deptName} onChange={v=>{set("deptName",v);set("establishment","");}} options={DEPT_DATA.map(x=>x.name)} placeholder="— Select Department —"/>
+      {d.deptName&&dept&&dept.address&&<div className="mb-3 p-2 bg-gray-50 rounded text-xs text-gray-500"><span className="font-semibold">Address:</span> {dept.address}</div>}
+      <Sel label="Office / Establishment" hint="This becomes the office definition in Rule 2(c)" value={d.establishment} onChange={v=>set("establishment",v)} options={dept?dept.establishments:[]} placeholder={d.deptName?"— Select Office —":"(Select a department first)"}/>
+    </div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-4">Post / Cadre Name</h3>
+      <SearchInput label="Name of the Post" hint="The exact post for which this RR is being drafted" value={postName} onChange={setPostName} listId="step1-post"/>
+      {!postName&&<p className="text-xs text-amber-600 mt-1">Enter the post name to unlock RR type and notification fields below.</p>}
+    </div>
+    {postName&&(<div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-4">RR Type & Notification</h3>
+      <F label="Is this a new RR or does it supersede an existing one?">
+        <div className="flex gap-3">
+          {[["superseding","Superseding Existing RR"],["new","New RR (First Time)"]].map(([v,l])=>(
+            <button key={v} onClick={()=>set("rrType",v)} className={`flex-1 py-2 rounded-lg text-sm font-medium border transition ${d.rrType===v?"bg-blue-600 text-white border-blue-600":"bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}>{l}</button>
+          ))}
+        </div>
+      </F>
+      {d.rrType==="superseding"&&(
+        <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg space-y-3">
+          <p className="text-xs text-yellow-800 font-medium">Provide the notification being superseded — this will appear in the preamble.</p>
+          <div className="grid grid-cols-2 gap-3">
+            <F label="Existing Notification Number"><input className={ic} placeholder="e.g. SRR-2010/CR-14/Desk-12" value={d.existingNotifNo} onChange={e=>set("existingNotifNo",e.target.value)}/></F>
+            <F label="Date of Existing Notification"><input type="date" className={ic} value={d.existingNotifDate} onChange={e=>set("existingNotifDate",e.target.value)}/></F>
+          </div>
+        </div>
+      )}
+      <div className="mt-4 space-y-2">
+        <div className="p-3 bg-blue-50 rounded-lg text-xs text-blue-800"><span className="font-semibold">ℹ Notification Number & Date</span> — assigned at gazette publication; blank lines are reserved in the output.</div>
+      </div>
+    </div>)}
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-4">Drafter Information</h3>
+      <p className="text-xs text-gray-500 mb-3">Officer preparing this draft. The signing authority is captured at the end (Step 7).</p>
+      <div className="grid grid-cols-2 gap-4">
+        <F label="Drafter Name"><input className={ic} placeholder="Full name of drafting officer" value={d.drafterName||""} onChange={e=>set("drafterName",e.target.value)}/></F>
+        <Sel label="Drafter Designation" value={d.drafterDesignation||""} onChange={v=>set("drafterDesignation",v)} options={DESIGNATIONS} placeholder="— Select —"/>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── STEP 2 ────────────────────────────────────────────────────────────────────
+function Step2({d,set}){
+  const add=()=>set("posts",[...d.posts,{name:"",group:"A",gazetted:true,feederPost:"",feederYears:3,recruitingBody:"commission"}]);
+  const rem=i=>set("posts",d.posts.filter((_,idx)=>idx!==i));
+  const upd=(i,k,v)=>{
+    const p=[...d.posts];
+    if(k==="group"){const gaz=v==="A"?true:v==="C"||v==="D"?false:p[i].gazetted;const rb=v==="A"||v==="B"?"commission":v==="D"?"selection_committee":p[i].recruitingBody;p[i]={...p[i],group:v,gazetted:gaz,recruitingBody:rb};}
+    else{p[i]={...p[i],[k]:v};}
+    set("posts",p);
+  };
+  return(<div>
+    {d.posts.map((post,i)=>(
+      <div key={i} className={sc}>
+        <div className="flex justify-between items-center mb-3"><h3 className="font-bold text-gray-800">Post {i+1}</h3>{d.posts.length>1&&<button onClick={()=>rem(i)} className="text-xs text-red-500 hover:underline">Remove</button>}</div>
+        <SearchInput label="Post Name" hint="Type to search 400+ posts" value={post.name} onChange={v=>upd(i,"name",v)} listId={`post-${i}`}/>
+        <div className="grid grid-cols-3 gap-3">
+          <F label="Group"><select className={ic} value={post.group} onChange={e=>upd(i,"group",e.target.value)}><option value="A">Group A</option><option value="B">Group B</option><option value="C">Group C</option><option value="D">Group D</option></select></F>
+          <F label="Gazetted Status">{post.group==="A"?<div className="mt-2 text-xs px-2 py-1 bg-green-100 text-green-700 rounded font-medium">Always Gazetted</div>:post.group==="C"||post.group==="D"?<div className="mt-2 text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded font-medium">Always Non-Gazetted</div>:<select className={ic} value={post.gazetted?"gazetted":"non-gazetted"} onChange={e=>upd(i,"gazetted",e.target.value==="gazetted")}><option value="gazetted">Gazetted</option><option value="non-gazetted">Non-Gazetted</option></select>}</F>
+          <F label="Recruiting Body" hint="For nomination route">
+            {(post.group==="A"||(post.group==="B"&&post.gazetted))?<div className="mt-2 text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded font-medium">MPSC (auto)</div>:post.group==="D"?<div className="mt-2 text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded font-medium">Selection Committee (auto)</div>:<select className={ic} value={post.recruitingBody} onChange={e=>upd(i,"recruitingBody",e.target.value)}><option value="commission">Commission (MPSC)</option><option value="selection_committee">Selection Committee</option></select>}
+          </F>
+        </div>
+        <SearchInput label="Feeder Post (for Promotion / LDE)" value={post.feederPost} onChange={v=>upd(i,"feederPost",v)} listId={`feeder-${i}`}/>
+        <Slide label="Minimum Regular Service on Feeder Post" hint="GR 2021: standard minimum is 3 years" value={post.feederYears} min={1} max={15} onChange={v=>upd(i,"feederYears",v)}/>
+        {(post.group==="C"||post.group==="D")&&<div className="p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800">Group {post.group} post — remember to enable <strong>Compassionate Appointment</strong> provision in Step 7 as required by GR 2021.</div>}
+      </div>
+    ))}
+    <button onClick={add} className="w-full py-2 border-2 border-dashed border-blue-300 rounded-lg text-blue-600 text-sm font-medium hover:bg-blue-50 transition">+ Add Another Post</button>
+  </div>);
+}
+
+// ── STEP 3 ────────────────────────────────────────────────────────────────────
+function Step3({d,set}){
+  const post=d.posts[0]||{};
+  const showCommission=(post.group==="A")||(post.group==="B"&&post.gazetted)||(post.recruitingBody==="commission");
+  const showSelComm=post.recruitingBody==="selection_committee"||post.group==="D";
+  const flags=modeFlags(d.appointmentMode);
+  // NEW: auto-detect from quals
+  const hasDiplomaQual=(d.eduQuals||[]).some(q=>q.type==="diploma");
+  const hasSSCQual=(d.eduQuals||[]).some(q=>(q.subjects||[]).some(s=>s.value==="Secondary School Certificate (SSC) Examination"));
+
+  return(<div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-1">Definitions — Auto-included</h3>
+      <p className="text-xs text-gray-500 mb-3">These are always included per the GR 2021 model. No input needed.</p>
+      <div className="space-y-1.5 text-xs text-gray-600">
+        <div className="p-2 bg-gray-50 rounded"><span className="font-bold">(a)</span> "Government" — Government of Maharashtra</div>
+        {d.deptName&&<div className="p-2 bg-gray-50 rounded"><span className="font-bold">(b)</span> "{d.deptName}" — as per Art. 166 of the Constitution of India</div>}
+        {d.establishment&&<div className="p-2 bg-gray-50 rounded"><span className="font-bold">(c)</span> "{d.establishment}" — office under {d.deptName||"[Department]"}, Government of Maharashtra</div>}
+        {showCommission&&<div className="p-2 bg-blue-50 rounded"><span className="font-bold">(d)</span> "Commission" — Maharashtra Public Service Commission</div>}
+        {showSelComm&&<div className="p-2 bg-blue-50 rounded"><span className="font-bold">(e)</span> "Selection Committee" — Committee constituted by Government for direct recruitment to this post</div>}
+      </div>
+    </div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Definitions — You Provide</h3>
+      <Sel label='(next) Educational Qualification — Field of Study' hint='"Degree" means a degree in [subject] of a statutory University…' value={d.defDegreeSubject} onChange={v=>set("defDegreeSubject",v)} options={QUAL_SUBJECTS} placeholder="— Select field of study —"/>
+      <div className="mb-4">
+        <div className="flex items-center justify-between mb-1">
+          <label className={lc}>(next) Technical Qualification Definition</label>
+          <button onClick={()=>set("defTechnicalQual",d.defTechnicalQual?"":TECH_QUALS[0])} className={`text-xs px-2 py-0.5 rounded font-medium border transition ${d.defTechnicalQual?"bg-green-600 text-white border-green-600":"bg-white text-gray-500 border-gray-300"}`}>{d.defTechnicalQual?"Included":"Include?"}</button>
+        </div>
+        {d.defTechnicalQual!==undefined&&d.defTechnicalQual!==""&&(<>
+          <Sel label="" value={d.defTechnicalQual} onChange={v=>set("defTechnicalQual",v)} options={TECH_QUALS} placeholder="— Select standard technical qualification —"/>
+          <p className="text-xs text-gray-400">Or describe a custom technical qualification:</p>
+          <textarea className={ic+" mt-1"} rows={2} placeholder="Describe custom technical qualification if not in the list above…" value={TECH_QUALS.includes(d.defTechnicalQual)?"":(d.defTechnicalQual||"")} onChange={e=>set("defTechnicalQual",e.target.value)}/>
+        </>)}
+        {!d.defTechnicalQual&&<p className="text-xs text-gray-400 italic">Not applicable — omit from definitions.</p>}
+      </div>
+      <Sel label="(next) Appointing Authority" value={d.defAppointingAuth} onChange={v=>set("defAppointingAuth",v)} options={APPOINTING_AUTHORITIES} placeholder="— Select —"/>
+      {flags.P===1&&<div className="p-2 bg-gray-50 rounded text-xs text-gray-600 mt-2"><span className="font-bold">(next)</span> "Eligibility for Promotion" — in accordance with the terms and conditions prescribed through rules, GRs or orders issued from time to time by GAD (auto-included when promotion mode is selected)</div>}
+    </div>
+
+    {/* ── NEW: Additional Definitions (PDF-prescribed) ────────────────────── */}
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Definitions — Additional (PDF-prescribed)</h3>
+      <p className="text-xs text-gray-500 mb-3">Auto-included based on your selections are shown with . Enable optional ones as needed. All letters are assigned dynamically in the final output.</p>
+
+      {/* Auto-detected */}
+      {hasDiplomaQual&&<div className="p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800 mb-2"><strong>"Diploma"</strong> — auto-included (diploma qualification detected in Step 4). <em>Means a diploma of any discipline of a statutory University or any other qualification declared by the Government to be equivalent thereto.</em></div>}
+      {hasSSCQual&&<div className="p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800 mb-2"><strong>"Secondary School Certificate Examination"</strong> — auto-included (SSC detected in qualifications). <em>Means the SSC Examination conducted by a Divisional Board under Mah. XLI of 1965, or any equivalent declared by Government.</em></div>}
+      {post.group==="D"&&<div className="p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800 mb-2"><strong>"Post in Group-D"</strong> — auto-included (Group-D post selected). <em>Means post falling in Group-D.</em></div>}
+      {flags.L===1&&<div className="p-2 bg-green-50 border border-green-200 rounded text-xs text-green-800 mb-2"><strong>"Limited Departmental Competitive Examination"</strong> — auto-included (LDE mode selected). <em>Means the competitive examination conducted by the Commission amongst eligible candidates for promotion.</em></div>}
+
+      {/* Optional toggles */}
+      <div className="mt-3 space-y-0">
+        <Toggle label='"University" — statutory University recognised by UGC' checked={d.hasUniversityDef} onChange={v=>set("hasUniversityDef",v)} hint='Include when "University" is referenced in the qualification criteria'/>
+        <Toggle label='"Post graduation degree" — Post Graduation degree of Statutory University or equivalent' checked={d.hasPostGradDef} onChange={v=>set("hasPostGradDef",v)} hint="Include when post-graduation degree is a prescribed qualification"/>
+        <Toggle label='"Recognised Institution" — Institution recognised by the Government' checked={d.hasRecognisedInstitutionDef} onChange={v=>set("hasRecognisedInstitutionDef",v)} hint='Include when this phrase appears in the qualification criteria'/>
+        <Toggle label='"Recognized school" — Government recognized school' checked={d.hasRecognisedSchoolDef} onChange={v=>set("hasRecognisedSchoolDef",v)} hint='Include when this phrase appears in the rules'/>
+        <Toggle label='"Schedule" — schedule annexed to the rules' checked={d.hasScheduleDef} onChange={v=>set("hasScheduleDef",v)} hint='Include only if a Schedule is actually annexed to these Recruitment Rules'/>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── QUALIFICATION BUILDER ─────────────────────────────────────────────────────
+function QualificationBuilder({quals,connectors,onChange}){
+  const QTYPES=[["degree","Degree"],["diploma","Diploma"],["iti","ITI Certificate"],["any","Custom"]];
+  const addQual=()=>onChange({quals:[...quals,{type:"degree",subjects:[{value:"",customText:""}],subjectConnectors:[],itiField:"",includeEquivalence:false}],connectors:[...connectors,"or"]});
+  const removeQual=(i)=>{if(quals.length<=1)return;const ci=i===0?0:i-1;onChange({quals:quals.filter((_,idx)=>idx!==i),connectors:connectors.filter((_,idx)=>idx!==ci)});};
+  const updQual=(i,k,v)=>{const q=[...quals];q[i]={...q[i],[k]:v};onChange({quals:q,connectors});};
+  const toggleOuterConn=(i)=>{const c=[...connectors];c[i]=c[i]==="or"?"and":"or";onChange({quals,connectors:c});};
+  const getSubjects=(q)=>q.subjects&&q.subjects.length>0?q.subjects:[{value:q.subject||"",customText:""}];
+  const getSubjConns=(q)=>q.subjectConnectors||[];
+  const addSubject=(qi)=>{const q=[...quals];const subs=getSubjects(q[qi]);const conns=getSubjConns(q[qi]);q[qi]={...q[qi],subjects:[...subs,{value:"",customText:""}],subjectConnectors:[...conns,"or"]};onChange({quals:q,connectors});};
+  const removeSubject=(qi,si)=>{const q=[...quals];const subs=getSubjects(q[qi]).filter((_,idx)=>idx!==si);const conns=getSubjConns(q[qi]).filter((_,idx)=>idx!==(si===0?0:si-1));q[qi]={...q[qi],subjects:subs,subjectConnectors:conns};onChange({quals:q,connectors});};
+  const updSubject=(qi,si,k,v)=>{const q=[...quals];const subs=[...getSubjects(q[qi])];subs[si]={...subs[si],[k]:v};q[qi]={...q[qi],subjects:subs};onChange({quals:q,connectors});};
+  const toggleSubjConn=(qi,si)=>{const q=[...quals];const conns=[...getSubjConns(q[qi])];conns[si]=conns[si]==="or"?"and":"or";q[qi]={...q[qi],subjectConnectors:conns};onChange({quals:q,connectors});};
+  return(<div>
+    {quals.map((q,i)=>{
+      const subs=getSubjects(q);const subjConns=getSubjConns(q);
+      return(<div key={i}>
+        <div className="p-3 bg-gray-50 rounded-lg border border-gray-200 mb-1">
+          <div className="flex flex-wrap gap-1 mb-3 items-center">
+            {QTYPES.map(([v,l])=>(<button key={v} onClick={()=>updQual(i,"type",v)} className={`px-2 py-1 rounded text-xs font-medium border transition ${q.type===v?"bg-green-600 text-white border-green-600":"bg-white text-gray-600 border-gray-300 hover:border-green-400"}`}>{l}</button>))}
+            {quals.length>1&&<button onClick={()=>removeQual(i)} className="ml-auto text-red-400 hover:text-red-600 font-bold text-lg leading-none px-1">×</button>}
+          </div>
+          {(q.type==="degree"||q.type==="diploma")&&(<>
+            <p className="text-xs text-gray-500 mb-2">Field(s) of Study — use the <strong>OR / AND</strong> toggle to connect multiple fields.</p>
+            {subs.map((subj,si)=>(<div key={si} className="mb-1">
+              <div className="flex gap-2 items-center">
+                <select className={ic+" flex-1"} value={subj.value||""} onChange={e=>updSubject(i,si,"value",e.target.value)}>
+                  <option value="">— Select field of study —</option>
+                  {QUAL_SUBJECTS.map((s,j)=><option key={j} value={s}>{s}</option>)}
+                  <option value="__other__">▸ Other (specify free text)…</option>
+                </select>
+                {subs.length>1&&<button onClick={()=>removeSubject(i,si)} className="text-red-400 hover:text-red-600 font-bold text-lg leading-none px-1 shrink-0">×</button>}
+              </div>
+              {subj.value==="__other__"&&<input className={ic+" mt-1"} placeholder="Type the field of study here…" value={subj.customText||""} onChange={e=>updSubject(i,si,"customText",e.target.value)}/>}
+              {si<subs.length-1&&(<div className="flex justify-center my-2"><button onClick={()=>toggleSubjConn(i,si)} className={`px-5 py-1 rounded-full text-xs font-bold border-2 transition shadow-sm ${subjConns[si]==="or"?"bg-blue-600 text-white border-blue-600":"bg-orange-500 text-white border-orange-500"}`}>{subjConns[si]==="or"?"OR — either field acceptable":"AND — both fields required"}</button></div>)}
+            </div>))}
+            <button onClick={()=>addSubject(i)} className="mt-2 text-xs text-blue-600 hover:underline font-medium">+ Add another field of study</button>
+            <div className="flex items-center gap-2 mt-3">
+              <input type="checkbox" id={`eq${i}`} checked={!!q.includeEquivalence} onChange={e=>updQual(i,"includeEquivalence",e.target.checked)} className="h-3.5 w-3.5"/>
+              <label htmlFor={`eq${i}`} className="text-xs text-gray-500">Include equivalence clause <span className="text-gray-400">("or any other qualification declared by the Government to be equivalent thereto")</span></label>
+            </div>
+          </>)}
+          {q.type==="iti"&&(<><input className={ic} placeholder="Specify ITI trade / field (e.g. Electrician, Fitter, Wireman, Carpenter, Welder)" value={q.itiField||""} onChange={e=>updQual(i,"itiField",e.target.value)}/><p className="text-xs text-gray-400 mt-1">Auto-framed as: ITI Certificate in [trade] from an Industrial Training Institute recognised by the Government.</p></>)}
+          {q.type==="any"&&<textarea className={ic} rows={2} placeholder="Describe the qualification in full…" value={q.subject||""} onChange={e=>updQual(i,"subject",e.target.value)}/>}
+        </div>
+        {i<quals.length-1&&(<div className="flex justify-center my-2"><button onClick={()=>toggleOuterConn(i)} className={`px-5 py-1.5 rounded-full text-xs font-bold border-2 transition shadow-sm ${connectors[i]==="or"?"bg-blue-600 text-white border-blue-600":"bg-orange-500 text-white border-orange-500"}`}>{connectors[i]==="or"?"OR — either qualification is acceptable":"AND — both qualifications required"}</button></div>)}
+      </div>);
+    })}
+    <button onClick={addQual} className="mt-2 text-xs text-green-600 hover:underline font-medium">+ Add another qualification option</button>
+  </div>);
+}
+
+// ── STEP 4 ────────────────────────────────────────────────────────────────────
+function Step4({d,set}){
+  const flags=modeFlags(d.appointmentMode);
+  const ratioKeys=modeRatioKeys(d.appointmentMode);
+  const ratioSum=ratioKeys.reduce((s,k)=>s+Number(d[k]||0),0);
+  const ratioOk=ratioKeys.length===0||ratioSum===100;
+  const toggleAgeCat=(opt)=>{const exists=d.ageCategories.find(c=>c.label===opt.label);if(exists)set("ageCategories",d.ageCategories.filter(c=>c.label!==opt.label));else set("ageCategories",[...d.ageCategories,{label:opt.label,max:opt.def}]);};
+  const updAgeCat=(i,v)=>{const c=[...d.ageCategories];c[i].max=v;set("ageCategories",c);};
+  const mp=d.posts[0]||{};
+  const rb=mp.recruitingBody==="selection_committee"?"Selection Committee":"Commission";
+  const deputationOptions=DEPT_DATA.flatMap(dept=>dept.establishments.map(e=>`${e}, ${dept.name}`));
+  const handleQualChange=({quals,connectors})=>{
+    set("eduQuals",quals);set("eduQualConnectors",connectors);
+    const has=quals.some(q=>{if(q.type==="iti")return !!q.itiField;if(q.type==="any")return !!q.subject;const subs=q.subjects||[];return subs.some(s=>s.value||s.customText);});
+    set("eduQualSubject",has?"populated":"");
+  };
+  return(<div className="space-y-4">
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Mode of Appointment</h3>
+      <div className="grid grid-cols-2 gap-2">{MODES.map(m=>(<button key={m.val} onClick={()=>set("appointmentMode",m.val)} className={`py-2.5 px-3 rounded-lg text-sm font-medium border transition text-left leading-tight ${d.appointmentMode===m.val?"bg-blue-600 text-white border-blue-600":"bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}>{m.label}</button>))}</div>
+      {ratioKeys.length>0&&(<div className="mt-4 p-4 bg-blue-50 rounded-lg"><p className="text-xs font-semibold text-blue-700 mb-3 uppercase tracking-wide">Appointment Ratios — must total 100%</p>{ratioKeys.map(k=>(<Slide key={k} label={RATIO_LABELS[k]} value={d[k]} min={0} max={100} step={5} unit="%" onChange={v=>set(k,v)}/>))}<div className={`text-xs font-semibold pt-1 ${ratioOk?"text-green-600":"text-red-500"}`}>{ratioOk?`Total: 100%`:`Total: ${ratioSum}% — must equal 100%`}</div></div>)}
+    </div>
+
+    {flags.P===1&&(<div className={sc}>
+      <div className="flex items-center gap-2 mb-3"><Badge color="gray">Promotion Criteria — Rule 3(a)</Badge></div>
+      <p className="text-xs text-gray-500 mb-3">Feeder post and years are captured in Step 2. Configure additional promotion conditions below.</p>
+      <div className="flex items-center justify-between mb-2">
+        <div><div className="text-sm font-medium text-gray-700">Departmental / Post-Recruitment Exam condition</div><div className="text-xs text-gray-400">Include only if exam rules have been published (GR 2021 Note)</div></div>
+        <button onClick={()=>set("promotionHasDeptExam",!d.promotionHasDeptExam)} className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${d.promotionHasDeptExam?"bg-blue-600":"bg-gray-300"}`}><span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${d.promotionHasDeptExam?"translate-x-6":"translate-x-1"}`}/></button>
+      </div>
+      {d.promotionHasDeptExam&&<F label="Name of Exam"><input className={ic} placeholder="e.g. Departmental Examination for Electrical Inspectors" value={d.promotionDeptExamName} onChange={e=>set("promotionDeptExamName",e.target.value)}/></F>}
+    </div>)}
+
+    {flags.N===1&&(<>
+      <div className={sc}>
+        <div className="flex items-center gap-2 mb-2"><Badge color="blue">(I) Age Limit — Rule 3(b)(I)</Badge><span className="text-xs text-gray-400">Nomination route • via {rb}</span></div>
+        <Slide label="Lower Age Limit — all categories" value={d.ageLowerLimit} min={18} max={25} onChange={v=>set("ageLowerLimit",v)} hint="GR 2021 standard: 18 years. Deviation requires GAD justification."/>
+        <div><label className={lc}>Upper Age Limit by Category</label><p className="text-xs text-gray-400 mb-2">GR 2021 standard: 38 (Open) / 43 (Backward). Click to add/remove categories.</p><div className="flex flex-wrap gap-1.5 mb-3">{AGE_CAT_OPTIONS.map(opt=>{const active=d.ageCategories.some(c=>c.label===opt.label);return(<button key={opt.label} onClick={()=>toggleAgeCat(opt)} className={`px-2 py-1 rounded text-xs font-medium border transition ${active?"bg-blue-600 text-white border-blue-600":"bg-white text-gray-500 border-gray-300 hover:border-blue-400"}`}>{opt.label}</button>);})}</div>{d.ageCategories.map((cat,i)=>(<div key={i} className="flex items-center gap-3 mb-2 p-2 bg-gray-50 rounded-lg"><span className="text-xs font-medium text-gray-700 w-52 shrink-0 leading-tight">{cat.label}</span><input type="range" min={25} max={58} step={1} value={cat.max} onChange={e=>updAgeCat(i,Number(e.target.value))} className="flex-1 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"/><span className="text-sm font-bold text-blue-700 w-14 text-right shrink-0">{cat.max} yrs</span></div>))}</div>
+      </div>
+      <div className={sc}>
+        <div className="flex items-center gap-2 mb-2"><Badge color="green">(II) Educational Qualification — Rule 3(b)(II)</Badge></div>
+        <p className="text-xs text-gray-400 mb-3">GR 2021: specify only the <strong>minimum</strong> required. Within a qualification type, use <strong>OR / AND</strong> to connect fields of study. Use the outer <strong>OR / AND</strong> to connect different qualification types.</p>
+        <QualificationBuilder quals={d.eduQuals||[{type:"degree",subjects:[{value:"",customText:""}],subjectConnectors:[],itiField:"",includeEquivalence:true}]} connectors={d.eduQualConnectors||[]} onChange={handleQualChange}/>
+      </div>
+      <div className={sc}>
+        <div className="flex items-center justify-between mb-1"><Badge color="orange">(III) Physical Eligibility — Rule 3(b)(III)</Badge><div className="flex items-center gap-2"><span className="text-xs text-gray-400">Applicable?</span><button onClick={()=>set("hasPhysicalEligibility",!d.hasPhysicalEligibility)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${d.hasPhysicalEligibility?"bg-orange-500":"bg-gray-300"}`}><span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${d.hasPhysicalEligibility?"translate-x-5":"translate-x-1"}`}/></button></div></div>
+        {d.hasPhysicalEligibility?(<><p className="text-xs text-gray-400 mb-3">Required for Police, Forest, Fire and similar cadres.</p><div className="grid grid-cols-3 gap-3"><F label="Height"><input className={ic} placeholder="e.g. 165 cm (M) / 157 cm (F)" value={d.physicalHeight} onChange={e=>set("physicalHeight",e.target.value)}/></F><F label="Chest"><input className={ic} placeholder="e.g. 79 cm (min. 5 cm expansion)" value={d.physicalChest} onChange={e=>set("physicalChest",e.target.value)}/></F><F label="Vision"><input className={ic} placeholder="e.g. 6/6 each eye with correction" value={d.physicalVision} onChange={e=>set("physicalVision",e.target.value)}/></F></div></>):(<p className="text-xs text-gray-400 italic mt-1">Not required — section will be omitted.</p>)}
+      </div>
+      <div className={sc}>
+        <div className="flex items-center justify-between mb-1"><Badge color="purple">(IV) Technical Qualification — Rule 3(b)(IV)</Badge><div className="flex items-center gap-2"><span className="text-xs text-gray-400">Applicable?</span><button onClick={()=>set("hasTechnicalQualNomination",!d.hasTechnicalQualNomination)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${d.hasTechnicalQualNomination?"bg-purple-500":"bg-gray-300"}`}><span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${d.hasTechnicalQualNomination?"translate-x-5":"translate-x-1"}`}/></button></div></div>
+        {d.hasTechnicalQualNomination?(<>{d.defTechnicalQual?<div className="p-2 bg-purple-50 rounded text-xs text-purple-800">Uses the Technical Qualification defined in Step 3: <span className="font-semibold">{d.defTechnicalQual}</span></div>:<div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800">No technical qualification defined in Step 3. Please go back and define one.</div>}</>):(<p className="text-xs text-gray-400 italic mt-1">Not required — section will be omitted.</p>)}
+      </div>
+      <div className={sc}>
+        <div className="flex items-center justify-between mb-1"><Badge color="orange">(V) Experience — Rule 3(b)(V)</Badge><div className="flex items-center gap-2"><span className="text-xs text-gray-400">Required?</span><button onClick={()=>set("hasExperience",!d.hasExperience)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${d.hasExperience?"bg-orange-500":"bg-gray-300"}`}><span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${d.hasExperience?"translate-x-5":"translate-x-1"}`}/></button></div></div>
+        {d.hasExperience?(<><p className="text-xs text-gray-400 mb-2">GR 2021: experience counted <strong>after obtaining minimum educational qualification</strong>.</p><Slide label="Total Minimum Experience (years)" value={d.experienceYears} min={1} max={15} onChange={v=>set("experienceYears",v)}/><F label="Nature / Domain of Experience Required"><textarea className={ic} rows={3} placeholder="Describe the type of experience required…" value={d.experienceDesc} onChange={e=>set("experienceDesc",e.target.value)}/></F><F label="Explanation / Definition of terms used (optional)"><textarea className={ic} rows={2} placeholder='e.g. "Responsible post" means…' value={d.experienceNote} onChange={e=>set("experienceNote",e.target.value)}/></F></>):(<p className="text-xs text-gray-400 italic mt-1">No experience required — section will be omitted.</p>)}
+      </div>
+    </>)}
+
+    {flags.D===1&&(<div className={sc}>
+      <div className="flex items-center gap-2 mb-2"><Badge color="purple">Deputation Criteria — Rule 3(d)</Badge></div>
+      <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 mb-3">Per GR 2021: deputation is a <strong>last resort only</strong>. Maximum <strong>15%</strong> of sanctioned posts. Both conditions are auto-included in the output.</div>
+      <Sel label="Source of Deputation" value={d.deputationSource} onChange={v=>set("deputationSource",v)} options={deputationOptions} placeholder="— Select Office / Department —"/>
+      <Slide label="Maximum Period of Deputation" value={d.deputationPeriod} min={1} max={10} onChange={v=>set("deputationPeriod",v)}/>
+    </div>)}
+
+    {flags.L===1&&(<div className={sc}>
+      <div className="flex items-center gap-2 mb-2"><Badge color="pink">Limited Departmental Examination (LDE) Criteria — Rule 3(c)</Badge></div>
+      <p className="text-xs text-gray-400 mb-3">Include only when LDE rules have been formally published.</p>
+      <SearchInput label="Posts Eligible to Appear for LDE" value={d.ldeEligiblePost} onChange={v=>set("ldeEligiblePost",v)} listId="lde-post"/>
+      <Slide label="Minimum Years of Regular Service to Appear for LDE" value={d.ldeMinService} min={1} max={10} onChange={v=>set("ldeMinService",v)}/>
+      <Sel label="LDE Conducting Body" value={d.ldeExamBody} onChange={v=>set("ldeExamBody",v)} options={LDE_BODIES} placeholder="— Select —"/>
+    </div>)}
+
+    {/* ── NEW: Compassionate Appointment Mode (PDF) ────────────────────────── */}
+    <div className={sc}>
+      <div className="flex items-center gap-2 mb-2"><Badge color="red">Compassionate Appointment — Rule 3 Sub-clause</Badge></div>
+      <p className="text-xs text-gray-400 mb-3">Per PDF model: Compassionate appointment as a direct sub-clause within Rule 3 (distinct from the separate compassionate provision in Step 7). References the educational/technical qualifications from the nomination route.</p>
+      {!flags.N&&<div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 mb-2">This mode references the nomination route qualifications. Ensure Nomination is part of the appointment mode selected above.</div>}
+      <Toggle label="Include Compassionate Appointment as a mode in Rule 3" checked={d.hasCompassionateMode} onChange={v=>set("hasCompassionateMode",v)} hint="By appointment on compassionate ground per prevailing Government orders, possessing requisite educational/technical qualifications"/>
+    </div>
+
+    {/* ── NEW: Permanent Cadre Transfer Mode (PDF) ─────────────────────────── */}
+    <div className={sc}>
+      <div className="flex items-center gap-2 mb-2"><Badge color="gray">Permanent Cadre Transfer — Rule 3 Sub-clause</Badge></div>
+      <p className="text-xs text-gray-400 mb-3">Per PDF model: Permanent cadre transfer as a sub-clause within Rule 3. The transfer-to post is this post; specify the transfer-from post below.</p>
+      {!flags.N&&<div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 mb-2">This mode references the nomination route qualifications. Ensure Nomination is part of the appointment mode selected above.</div>}
+      <Toggle label="Include Permanent Cadre Transfer as a mode in Rule 3" checked={d.hasPermanentCadreTransfer} onChange={v=>set("hasPermanentCadreTransfer",v)} hint="By permanent cadre transfer of a suitable person from a related post, on the basis of seniority subject to fitness"/>
+      {d.hasPermanentCadreTransfer&&(<div className="mt-3 p-3 bg-gray-50 rounded-lg space-y-2">
+        <SearchInput label="Transfer From Post" hint="The post from which the person is being permanently transferred" value={d.cadreTransferFromPost} onChange={v=>set("cadreTransferFromPost",v)} listId="cadre-from-post"/>
+        <F label="Group of Transfer-From Post">
+          <select className={ic} value={d.cadreTransferGroup} onChange={e=>set("cadreTransferGroup",e.target.value)}>
+            {["A","B","C","D"].map(g=><option key={g} value={g}>Group {g}</option>)}
+          </select>
+        </F>
+        <Slide label="Minimum Regular Service on Transfer-From Post" value={d.cadreTransferMinYears} min={1} max={10} onChange={v=>set("cadreTransferMinYears",v)}/>
+      </div>)}
+    </div>
+  </div>);
+}
+
+// ── STEP 5 ────────────────────────────────────────────────────────────────────
+function Step5({d,set}){
+  return(<div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Departmental Examination Provision — Rule 5</h3>
+      <p className="text-xs text-gray-500 mb-4">Per GR 2021: include this rule only when departmental exam rules for this post have been formally framed.</p>
+      <Toggle label="Include Rule 5 — Departmental Examination provision" checked={d.hasDeptExam} onChange={v=>set("hasDeptExam",v)} hint="Omit if no departmental exam rules exist for this post"/>
+      {d.hasDeptExam&&(<div className="mt-4 space-y-4">
+        <F label="Name / Description of the Examination"><input className={ic} placeholder="e.g. Departmental Examination for Electrical Inspectors, Group-A" value={d.deptExamName} onChange={e=>set("deptExamName",e.target.value)}/></F>
+        <F label="Purpose of This Examination" hint="Per GR 2021 — the consequence of failing depends on its purpose">
+          <div className="flex gap-3">
+            {[["confirmation","Confirmation on the post (permanency)"],["promotion_eligibility","Eligibility for promotion to next higher post"]].map(([v,l])=>(
+              <button key={v} onClick={()=>set("deptExamPurpose",v)} className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition text-left leading-tight ${d.deptExamPurpose===v?"bg-blue-600 text-white border-blue-600":"bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}>{l}</button>
+            ))}
+          </div>
+        </F>
+        <div className="p-3 bg-blue-50 rounded-lg text-xs text-blue-800">
+          <span className="font-semibold">Auto-generated text:</span>{" "}
+          {d.deptExamPurpose==="confirmation"?"The person appointed by nomination shall pass the prescribed Departmental Examination within the probation period. Failure to pass the said examination within the probation period (including extended period) shall render his/her services liable to be terminated.":"The person appointed to the post mentioned in Rule 3 shall pass the prescribed Departmental Examination within the time limit prescribed by the Government. Failure to pass the said examination within the prescribed time limit shall render him/her ineligible for promotion to the next higher post until he/she passes the said examination."}
+        </div>
+      </div>)}
+    </div>
+  </div>);
+}
+
+// ── STEP 6 ────────────────────────────────────────────────────────────────────
+function Step6({d,set}){
+  return(<div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Probation Period — Rule 6</h3>
+      <F label="Probation Variant" hint="GR 2021 prescribes three variants based on group and CPTP inclusion">
+        <div className="space-y-2">
+          {[["standard","Group A & B (Gazetted) — Standard (2 years + 1 year extension)"],["cptp","Group A & B (Gazetted) — CPTP (Combined Probationary Training Programme)"],["group_bc","Group B (Non-Gazetted) / Group C / Group D — As per Departmental Order"]].map(([v,l])=>(
+            <button key={v} onClick={()=>set("probationVariant",v)} className={`w-full py-2 px-3 rounded-lg text-sm font-medium border transition text-left leading-tight ${d.probationVariant===v?"bg-blue-600 text-white border-blue-600":"bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}>{l}</button>
+          ))}
+        </div>
+      </F>
+      {d.probationVariant==="standard"&&(<div className="mt-2 space-y-1">
+        <Slide label="Probation Duration" value={d.probationYears} min={1} max={5} onChange={v=>set("probationYears",v)} hint="Standard: 2 years for Group A & B Gazetted"/>
+        <Slide label="Maximum Extension" value={d.probationExtension} min={1} max={3} onChange={v=>set("probationExtension",v)} hint="Standard: 1 year"/>
+        <p className="text-xs text-gray-400">Consequences of failure (termination) auto-included.</p>
+      </div>)}
+      {d.probationVariant==="cptp"&&<div className="mt-2 p-3 bg-blue-50 rounded text-xs text-blue-800">CPTP provisions (seniority, exams, training) will be auto-referenced to GAD CPTP Desk orders. No duration input required.</div>}
+      {d.probationVariant==="group_bc"&&(<div className="mt-2"><p className="text-xs text-gray-400 mb-2">Per GR 2021: describe the probation period and conditions as prescribed by your department's order for this post.</p><F label="Probation Conditions (as per departmental order)"><textarea className={ic} rows={3} placeholder="e.g. A person appointed to this post shall be on probation for a period of one year…" value={d.additionalProbationText||""} onChange={e=>set("additionalProbationText",e.target.value)}/></F></div>)}
+    </div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Language & Computer Provisions</h3>
+      <Toggle label="Rule 7 — Hindi & Marathi Language Examination" checked={d.languageExam} onChange={v=>set("languageExam",v)} hint="Annual increment and promotion withheld until passed"/>
+      <Toggle label="Rule 8 — Certificate of Computer Operations" checked={d.computerCert} onChange={v=>set("computerCert",v)} hint="Annual increment and promotion withheld until certificate obtained"/>
+      {d.computerCert&&(<div className="mt-3 ml-4 flex items-center justify-between py-2">
+        <div><div className="text-sm font-medium text-gray-600">CPTP variant for Computer Cert (Rule 8)</div><div className="text-xs text-gray-400">If this post is under CPTP, clearing the Post-Graduate Course is treated as passing Computer Eligibility — as per GAD(IT) GR dated 30.07.2019</div></div>
+        <button onClick={()=>set("isCPTP",!d.isCPTP)} className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${d.isCPTP?"bg-blue-600":"bg-gray-300"}`}><span className={`inline-block h-3 w-3 transform rounded-full bg-white shadow transition-transform ${d.isCPTP?"translate-x-5":"translate-x-1"}`}/></button>
+      </div>)}
+    </div>
+  </div>);
+}
+
+// ── STEP 7 ────────────────────────────────────────────────────────────────────
+function Step7({d,set}){
+  const tlevel=TRANSFER_LEVELS.find(t=>t.val===d.transferLevel)||TRANSFER_LEVELS[0];
+  const post=d.posts[0]||{};
+  const isCD=post.group==="C"||post.group==="D";
+  return(<div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Standard Provisions</h3>
+      <Toggle label="Rule 9 — Declaration of Small Family" checked={d.smallFamily} onChange={v=>set("smallFamily",v)} hint="As per Maharashtra Civil Services (Affidavit of Small Families) Rules, 2005"/>
+      <Toggle label="Rule 11 — Applicability of Other Service Rules" checked={d.otherRules} onChange={v=>set("otherRules",v)} hint="Terms and conditions fixed by Government order shall remain applicable after entry into Government service"/>
+    </div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Rule 10 — Transfer Provisions</h3>
+      <F label="Seniority List Level" hint="Determines where the employee can be transferred.">
+        <div className="grid grid-cols-2 gap-2 mb-2">{TRANSFER_LEVELS.map(t=>(<button key={t.val} onClick={()=>set("transferLevel",t.val)} className={`py-2 px-3 rounded-lg text-xs font-medium border transition ${d.transferLevel===t.val?"bg-blue-600 text-white border-blue-600":"bg-white text-gray-600 border-gray-300 hover:border-blue-400"}`}>{t.label}</button>))}</div>
+        <div className="p-2 bg-blue-50 rounded text-xs text-blue-800">Seniority list maintained at <strong>{tlevel.label}</strong>. Transfer admissible <strong>{tlevel.text}</strong>.</div>
+      </F>
+      <Toggle label="Separate seniority list maintained for promotion purposes" checked={d.separateSeniorityForPromotion} onChange={v=>set("separateSeniorityForPromotion",v)} hint="Per GR 2021: if this post's seniority is at District/Division level but the promotional post's seniority is at State level"/>
+    </div>
+    {isCD&&(<div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Compassionate Appointment (Separate Additional Rule)</h3>
+      <div className="p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-800 mb-3">GR 2021: Compassionate appointment is admissible for Group C and D posts. This generates a separate additional rule — use Step 4 to include it as a Rule 3 sub-clause per the PDF format.</div>
+      <Toggle label="Include Compassionate Appointment as an additional rule" checked={d.hasCompassionate} onChange={v=>set("hasCompassionate",v)} hint="As per prevailing Government policy on compassionate appointment"/>
+    </div>)}
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Additional / Department-Specific Provisions</h3>
+      <F label="Free Text" hint="Any special rules beyond the standard template — per GR 2021, include with justification"><textarea className={ic} rows={5} placeholder="e.g. Reservation roster, specific eligibility conditions, special physical standards…" value={d.additionalProvisions} onChange={e=>set("additionalProvisions",e.target.value)}/></F>
+    </div>
+    <div className={sc}>
+      <h3 className="font-bold text-gray-800 mb-3">Signing Authority</h3>
+      <p className="text-xs text-gray-500 mb-3">The officer in whose name the RR notification is issued — end of the approval chain.</p>
+      <div className="grid grid-cols-2 gap-4">
+        <Sel label="Signatory Name" value={d.signatoryName} onChange={v=>set("signatoryName",v)} options={SIGNATORIES} placeholder="— Select —"/>
+        <Sel label="Designation" value={d.signatoryDesignation} onChange={v=>set("signatoryDesignation",v)} options={DESIGNATIONS} placeholder="— Select —"/>
+      </div>
+    </div>
+  </div>);
+}
+
+// ── PREVIEW helpers ───────────────────────────────────────────────────────────
+function fmtDate(v){if(!v)return"__________";return new Date(v).toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});}
+
+function renderSubjectPhrase(q){
+  const subs=q.subjects&&q.subjects.length>0?q.subjects:[{value:q.subject||"",customText:""}];
+  const conns=q.subjectConnectors||[];
+  const parts=subs.map(s=>{if(!s.value)return"[SUBJECT]";return s.value==="__other__"?(s.customText||"[SUBJECT]"):s.value;});
+  return parts.reduce((acc,p,i)=>i===0?p:`${acc} ${(conns[i-1]||"or").toUpperCase()} ${p}`,"");
+}
+
+function buildQualPhrase(d){
+  const quals=d.eduQuals;
+  if(!quals||quals.length===0)return"[QUALIFICATION]";
+  const outerConns=d.eduQualConnectors||[];
+  const parts=quals.map(q=>{
+    if(q.type==="iti")return`ITI Certificate in ${q.itiField||"[TRADE]"} from an Industrial Training Institute recognised by the Government`;
+    if(q.type==="any")return q.subject||"[QUALIFICATION]";
+    const typeLabel=q.type==="diploma"?"diploma":"bachelor's degree";
+    const subjPhrase=renderSubjectPhrase(q);
+    const equiv=q.includeEquivalence?", or any other qualification declared by the Government to be equivalent thereto":"";
+    return`a ${typeLabel} in ${subjPhrase} from a statutory university${equiv}`;
+  });
+  return parts.reduce((acc,p,i)=>i===0?p:`${acc} ${(outerConns[i-1]||"or").toUpperCase()} ${p}`,"");
+}
+
+// ── NEW: Build dynamic definitions array for Rule 2 ───────────────────────────
+function buildDefsArray(d){
+  const mp=d.posts[0]||{name:"[POST NAME]",group:"A",gazetted:true,recruitingBody:"commission"};
+  const postLabel=`"${mp.name||"[POST NAME]"}", Group-${mp.group} (${mp.gazetted?"Gazetted":"Non-Gazetted"})`;
+  const flags=modeFlags(d.appointmentMode);
+  const showCommission=(mp.group==="A")||(mp.group==="B"&&mp.gazetted)||(mp.recruitingBody==="commission");
+  const showSelComm=mp.recruitingBody==="selection_committee"||mp.group==="D";
+  const hasDiplomaQual=(d.eduQuals||[]).some(q=>q.type==="diploma");
+  const hasSSCQual=(d.eduQuals||[]).some(q=>(q.subjects||[]).some(s=>s.value==="Secondary School Certificate (SSC) Examination"));
+
+  const defs=[];
+  defs.push({key:"govt",term:'"Government"',text:"means the Government of Maharashtra"});
+  if(d.deptName)defs.push({key:"dept",term:`"${d.deptName}"`,text:`means the Department specified in the First Schedule appended to the Maharashtra Government Rules of Business made under Article 166 of the Constitution of India`});
+  if(d.establishment)defs.push({key:"estab",term:`"${d.establishment}"`,text:`means ${d.establishment} under the administrative control of ${d.deptName||"[Department]"}, Government of Maharashtra`});
+  if(showCommission)defs.push({key:"comm",term:'"Commission"',text:"means the Maharashtra Public Service Commission"});
+  if(showSelComm)defs.push({key:"selcomm",term:'"Selection Committee"',text:`means the Committee constituted from time to time by the Government for the purpose of selection of candidates for direct recruitment to the post of ${postLabel} in the Government Service`});
+  if(mp.group==="D")defs.push({key:"groupd",term:'"Post in Group-D"',text:"means post falling in Group-D"});
+  if(d.defDegreeSubject)defs.push({key:"degree",term:'"Degree"',text:`means a degree in ${d.defDegreeSubject} of a statutory University or any other qualification declared by the Government to be equivalent thereto`});
+  if(hasDiplomaQual)defs.push({key:"diploma",term:'"Diploma"',text:"means a diploma of any discipline of a statutory University or any other qualification declared by the Government to be equivalent thereto"});
+  if(d.hasUniversityDef)defs.push({key:"univ",term:'"University"',text:"means statutory University recognised by University Grant Commission (U.G.C.)"});
+  if(d.hasPostGradDef)defs.push({key:"postgrad",term:'"Post graduation degree"',text:"means a Post Graduation degree of Statutory University or any other qualification declared by the government of India or the State Government to be equivalent thereto"});
+  if(hasSSCQual)defs.push({key:"ssc",term:'"Secondary School Certificate Examination"',text:"means the Secondary School Certificate Examination conducted by a Divisional Board constituted under the Maharashtra Secondary and Higher Secondary Education Board Act, 1965 (Mah. XLI of 1965) and includes any other examination declared by Government to be equivalent thereto"});
+  if(d.hasRecognisedInstitutionDef)defs.push({key:"recinst",term:'"Recognised Institution"',text:"means an Institution recognised by the Government"});
+  if(d.hasRecognisedSchoolDef)defs.push({key:"recsch",term:'"Recognized school"',text:"means the Government recognized school"});
+  if(d.defTechnicalQual)defs.push({key:"techqual",term:'"Technical Qualification"',text:`means ${d.defTechnicalQual}`});
+  defs.push({key:"apptauth",term:'"Appointing Authority"',text:`means ${d.defAppointingAuth||"[APPOINTING AUTHORITY]"}, who is the competent authority to appoint a candidate to the post of ${postLabel}`});
+  if(flags.L)defs.push({key:"lde",term:'"Limited Departmental Competitive Examination"',text:`means the competitive examination conducted by the Commission amongst the eligible candidates for promotion on the post of ${mp.name||"[POST NAME]"}`});
+  if(d.hasScheduleDef)defs.push({key:"sched",term:'"Schedule"',text:"means the schedule annexed to the rules"});
+  // UPDATED from PDF: "Eligibility for Promotion" replaces "Eligibility subject to Seniority"
+  if(flags.P)defs.push({key:"eligpromo",term:'"Eligibility for Promotion"',text:"means eligibility for promotion in accordance with the terms and conditions prescribed through rules, Government Resolutions, or orders issued from time to time in this regard by the General Administration Department of the Government"});
+  return defs;
+}
+
+// ── PREVIEW ───────────────────────────────────────────────────────────────────
+function Preview({d}){
+  const mp=d.posts[0]||{name:"[POST NAME]",group:"A",gazetted:true,feederPost:"[FEEDER POST]",feederYears:3,recruitingBody:"commission"};
+  const postLabel=`"${mp.name||"[POST NAME]"}", Group-${mp.group} (${mp.gazetted?"Gazetted":"Non-Gazetted"})`;
+  const dept=DEPT_DATA.find(x=>x.name===d.deptName);
+  const addr=(dept&&dept.address)?dept.address:"";
+  const rn=d.ruleName||`${mp.name||"[POST NAME]"}, Group-${mp.group} (${mp.gazetted?"Gazetted":"Non-Gazetted"}) in the ${d.establishment||"[OFFICE]"} (Recruitment) Rules`;
+  const rb=mp.recruitingBody==="selection_committee"?"Selection Committee":"Commission";
+  const flags=modeFlags(d.appointmentMode);
+  const ratioKeys=modeRatioKeys(d.appointmentMode);
+  const multi=ratioKeys.length>0;
+  const hasNewModes=d.hasCompassionateMode||d.hasPermanentCadreTransfer;
+
+  // Rule 3 sub-clause letter assignment
+  let cl=97;
+  const pL=flags.P?String.fromCharCode(cl++):null;
+  const dL=flags.D?String.fromCharCode(cl++):null;
+  const lL=flags.L?String.fromCharCode(cl++):null;
+  const nL=flags.N?String.fromCharCode(cl++):null;
+  const compassL=d.hasCompassionateMode?String.fromCharCode(cl++):null;
+  const cadreL=d.hasPermanentCadreTransfer?String.fromCharCode(cl++):null;
+
+  const R=computeRuleNums(d);
+  const RLABELS={promotionRatio:"promotion",deputationRatio:"deputation",nominationRatio:"nomination",ldeRatio:"Limited Departmental Competitive Examination"};
+
+  const supersessionText=d.rrType==="superseding"?` and in supersession of all the existing rules, orders or instruments issued in this behalf${d.existingNotifNo?` vide Notification No. ${d.existingNotifNo}${d.existingNotifDate?" dated "+fmtDate(d.existingNotifDate):""}`:""}, `:" ";
+  const modeOpenMap={promotion:"regulating appointment by promotion to the post",deputation:"regulating appointment by deputation to the post",nomination:"regulating direct recruitment by nomination to the post",promotion_deputation:"regulating recruitment by promotion and deputation to the post",promotion_nomination:"regulating recruitment by promotion and direct recruitment (nomination) to the post",deputation_nomination:"regulating recruitment by deputation and direct recruitment (nomination) to the post",all:"regulating recruitment to the post",promotion_lde_nomination:"regulating recruitment to the post"};
+
+  // Rule 3 tail: if new modes are added to a single-mode appointment, switch to "either,—"
+  const baseRule3tail={promotion:"by promotion as follows,—",deputation:"by deputation as follows,—",nomination:"by direct recruitment (nomination) as follows,—",promotion_deputation:"either,—",promotion_nomination:"either,—",deputation_nomination:"either,—",all:"either,—",promotion_lde_nomination:"either,—"};
+  const isSingleBaseTail=!baseRule3tail[d.appointmentMode]?.startsWith("either");
+  const effectiveRule3Tail=hasNewModes&&isSingleBaseTail?"either,—":baseRule3tail[d.appointmentMode];
+
+  const qualPhrase=buildQualPhrase(d);
+  const tlevel=TRANSFER_LEVELS.find(t=>t.val===d.transferLevel)||TRANSFER_LEVELS[0];
+  const defs=buildDefsArray(d);
+
+  return(<div className="bg-white rounded-xl border border-gray-200 shadow-sm font-serif text-sm leading-relaxed">
+    <div className="text-center py-6 px-8 border-b border-gray-200 bg-gray-50 rounded-t-xl">
+      <div className="text-xs text-gray-500 mb-1">GOVERNMENT OF MAHARASHTRA</div>
+      <div className="text-lg font-bold text-gray-900 uppercase tracking-wide">{d.deptName||"[DEPARTMENT NAME]"}</div>
+      <div className="text-xs text-gray-500 mt-0.5">{d.establishment||"[OFFICE / ESTABLISHMENT]"}</div>
+      <div className="text-xs text-gray-600 mt-1">{addr&&addr+", "}dated the __________.</div>
+      <div className="mt-3 italic font-semibold text-gray-800">NOTIFICATION</div>
+      <div className="mt-1 text-xs text-gray-400">Constitution of India</div>
+    </div>
+    <div className="px-8 py-6 space-y-4">
+      <p><span className="font-bold">No. ____________.</span>—In exercise of the powers conferred by the proviso to article 309 of the Constitution of India{supersessionText}the Governor of Maharashtra is hereby pleased to make the following {d.rrType==="superseding"?"new ":""}rules {modeOpenMap[d.appointmentMode]} of {postLabel} in the <span className="font-semibold">{d.establishment||"[OFFICE NAME]"}</span>, namely:—</p>
+
+      <div>
+        <p className="font-bold">1. Short Title, Commencement and Application.—</p>
+        <p className="ml-4 mt-1">(1) These rules may be called <span className="font-semibold">"{rn}, ____."</span></p>
+        <p className="ml-4 mt-1">(2) These rules shall come into force on the date of their publication in the Government Gazette.</p>
+      </div>
+
+      {/* ── Rule 2: DYNAMIC definitions with auto-assigned letters ── */}
+      <div>
+        <p className="font-bold">2. Definitions.— In these rules unless the context requires otherwise,—</p>
+        {defs.map((def,i)=>(
+          <p key={def.key} className="ml-4 mt-1">
+            <span className="italic">({String.fromCharCode(97+i)})</span> <span className="font-bold">{def.term}</span> {def.text};
+          </p>
+        ))}
+      </div>
+
+      {/* ── Rule 3: Mode of Appointment ── */}
+      <div>
+        <p className="font-bold">3. Mode of Appointment.— The mode of appointment to {postLabel} shall be {effectiveRule3Tail}</p>
+
+        {flags.P===1&&<div className="ml-4 mt-2"><p><span className="italic">({pL})</span> <span className="font-bold">By Promotion</span> — By promotion of a suitable person on the basis of seniority subject to fitness from amongst the persons holding the post of <span className="font-semibold">{mp.feederPost||"[FEEDER POST]"}</span>, Group-{mp.group} having regular and continuous service on that post of not less than <span className="font-semibold">{mp.feederYears} years</span>{d.defDegreeSubject?` and possessing ${d.defDegreeSubject} or equivalent qualification`:""}{d.promotionHasDeptExam?` and either having passed the ${d.promotionDeptExamName||"[DEPARTMENTAL EXAMINATION]"} or having been exempted therefrom`:""}{ (flags.D||flags.L||flags.N||hasNewModes)?"; or":"."}</p></div>}
+
+        {flags.N===1&&<div className="ml-4 mt-2">
+          <p><span className="italic">({nL})</span> <span className="font-bold">By Nomination</span> — By nomination of candidates recommended by the <span className="font-semibold">{rb}</span> on the basis of result of Competitive Examination conducted therefor, who fulfils the following criteria, namely:—</p>
+          <div className="ml-4 mt-2 space-y-3">
+            <div>
+              {/* UPDATED: Age limit syntax per PDF — number words, "as on last date of acceptance" */}
+              <p className="font-bold">(I) Age Limit.—</p>
+              <p className="ml-4">(i) Minimum Age Limit — Not less than {numWords(d.ageLowerLimit)} years as on the last date of acceptance of applications mentioned in the advertisement;</p>
+              <p className="ml-4">(ii) Maximum Age Limit —</p>
+              {d.ageCategories.map((cat,i)=>(<p key={i} className="ml-8">{"("+String.fromCharCode(65+i)+")"} <span className="font-semibold">{cat.label}:</span> Not more than {numWords(cat.max)} years as on the last date of acceptance of applications mentioned in the advertisement;</p>))}
+            </div>
+            {d.eduQualSubject&&<div><p className="font-bold">(II) Educational Qualification.—</p><p className="ml-4">A candidate shall possess {qualPhrase}.</p></div>}
+            {d.hasPhysicalEligibility&&<div><p className="font-bold">(III) Physical Eligibility.—</p>{d.physicalHeight&&<p className="ml-4">Height: {d.physicalHeight}</p>}{d.physicalChest&&<p className="ml-4">Chest: {d.physicalChest}</p>}{d.physicalVision&&<p className="ml-4">Vision: {d.physicalVision}</p>}</div>}
+            {d.hasTechnicalQualNomination&&d.defTechnicalQual&&<div><p className="font-bold">(IV) Technical Qualification.—</p><p className="ml-4">A candidate shall possess {d.defTechnicalQual}.</p></div>}
+            {d.hasExperience&&<div><p className="font-bold">{d.hasTechnicalQualNomination?"(V)":"(IV)"} Experience.—</p><p className="ml-4">A candidate shall have a minimum of <span className="font-semibold">{d.experienceYears} years</span> of experience, gained after acquiring the minimum educational qualification mentioned in sub-rule (II) above{d.experienceDesc?`, in ${d.experienceDesc}`:""}.{d.experienceNote?` Explanation — ${d.experienceNote}.`:""}</p></div>}
+          </div>
+          {(flags.D||flags.L||hasNewModes)?<p className="ml-4 mt-1 italic">; or</p>:null}
+        </div>}
+        {flags.L===1&&<div className="ml-4 mt-2"><p><span className="italic">({lL})</span> <span className="font-bold">By Limited Departmental Examination</span> — The selection shall be made on the basis of Common Merit List prepared from the result of the Limited Departmental Competitive Examination conducted by <span className="font-semibold">{d.ldeExamBody}</span> from amongst the persons holding the post of <span className="font-semibold">{d.ldeEligiblePost||"[ELIGIBLE POST]"}</span> having not less than <span className="font-semibold">{d.ldeMinService} years</span> of regular and continuous service on that post{(flags.D||hasNewModes)?"; or":"."}</p></div>}
+        {flags.D===1&&<div className="ml-4 mt-2"><p><span className="italic">({dL})</span> <span className="font-bold">By Deputation</span> — In the event of non-availability of suitable candidates through {[flags.P&&"promotion",flags.N&&"nomination",flags.L&&"Limited Departmental Examination"].filter(Boolean).join(", ")||"other modes"}, a suitable person shall be appointed by deputation from officers/employees{d.deputationSource?` of ${d.deputationSource}`:""} holding posts with equivalent pay scales.</p><p className="ml-4 mt-1">Provided that, the appointment by deputation shall be made in adherence to all the terms and conditions of the Deputation Policy of the General Administration Department from time to time. Further, the appointment by deputation shall not exceed <span className="font-semibold">fifteen per cent</span> of the total number of sanctioned posts. The period of such deputation shall ordinarily not exceed <span className="font-semibold">{d.deputationPeriod} years</span>.</p>{hasNewModes&&<p className="ml-4 mt-1 italic">; or</p>}</div>}
+        {d.hasCompassionateMode&&compassL&&<div className="ml-4 mt-2"><p><span className="italic">({compassL})</span> <span className="font-bold">By Compassionate Appointment</span> — by appointment of a suitable person on compassionate ground, in accordance with the orders issued in this behalf by the Government, from time to time, who possesses the educational qualification{d.hasTechnicalQualNomination&&d.defTechnicalQual?" and technical qualification":""} as specified in clause ({nL||"b"}) above.</p>{d.hasPermanentCadreTransfer&&<p className="ml-4 mt-1 italic">; or</p>}</div>}
+        {d.hasPermanentCadreTransfer&&cadreL&&<div className="ml-4 mt-2"><p><span className="italic">({cadreL})</span> <span className="font-bold">By Permanent Cadre Transfer</span> — by permanent cadre transfer of a suitable person from amongst the persons holding the post of <span className="font-semibold">{d.cadreTransferFromPost||"[FROM POST]"}</span>, Group-{d.cadreTransferGroup}, who prefer the post of <span className="font-semibold">{mp.name||"[THIS POST]"}</span>, having completed not less than <span className="font-semibold">{d.cadreTransferMinYears} years</span> of regular service on the post of {d.cadreTransferFromPost||"[FROM POST]"} and possessing qualifications mentioned in clause ({nL||"b"}) above, on the basis of seniority subject to fitness. The seniority of such persons on the post of {mp.name||"[THIS POST]"} shall be fixed from the date of appointment to the post of {mp.name||"[THIS POST]"}.</p></div>}
+      </div>
+      {multi&&R.ratio&&<div><p className="font-bold">{R.ratio}. Proportion of Appointment.—</p><p className="mt-1">The proportion of appointment to the post mentioned in Rule 3 by {ratioKeys.map(k=>RLABELS[k]).join(", ")} shall be <span className="font-semibold">{ratioKeys.map(k=>d[k]).join(":")}</span> respectively, for the total number of sanctioned posts.</p><p className="mt-1">Provided that, if suitable candidates for appointment by promotion are not available, the proportion of appointment by promotion and nomination may be relaxed for that particular recruitment year with the consent of the Appointing Authority, and the posts earmarked for promotion may be filled by nomination.</p></div>}
+      {d.hasDeptExam&&R.deptExam&&<div><p className="font-bold">{R.deptExam}. Departmental Examination.—</p><p className="mt-1">The person appointed to the post mentioned in Rule 3 shall pass the <span className="font-semibold">{d.deptExamName||"[DEPARTMENTAL EXAMINATION]"}</span>{d.deptExamPurpose==="confirmation"?" within the probation period (including extended period). Failure to pass the said examination within the probation period shall render his/her services liable to be terminated.":" within the time limit prescribed by the Government from time to time. Failure to pass the said examination within the prescribed time limit shall render him/her ineligible for promotion to the next higher post until he/she passes the said examination."}</p></div>}
+      {(flags.N||flags.D||flags.L)&&R.probation&&<div><p className="font-bold">{R.probation}. Probation Period.—</p>{d.probationVariant==="standard"&&<p className="mt-1">A person appointed by nomination to the post mentioned in Rule 3 shall be on probation for a period of <span className="font-semibold">{d.probationYears} years</span>. The probation period may be extended by a maximum of <span className="font-semibold">{d.probationExtension} year</span> at the discretion of the Appointing Authority. Completion of this probation period (including extended period) satisfactorily as per the probation policy of the Government{d.hasDeptExam&&d.deptExamPurpose==="confirmation"?`, and passing of the prescribed Departmental Examination (${d.deptExamName||"[EXAM]"}), if any,`:""} are mandatory. In the event of failing to complete the probation period (including extended period) satisfactorily as per the probation policy of the Government, his/her services shall be liable to be terminated.</p>}{d.probationVariant==="cptp"&&<p className="mt-1">The Officers who are appointed to the post mentioned in Rule 3 and are undergoing training under the Combined Probationary Training Programme (CPTP), the service matters pertaining to their probation, seniority, departmental examination and other related service matters shall be regulated by the provisions made in the various Government Resolutions, Government Circulars, Rules and Notifications issued by the CPTP Desk of the General Administration Department from time to time. In the event of finding the person so appointed unsuitable for the said post, his/her services shall be liable to be terminated.</p>}{d.probationVariant==="group_bc"&&<p className="mt-1">{d.additionalProbationText||"[Incorporate probation provisions as per the Administrative Department's order for this post — period, mandatory conditions, and consequences of non-compliance.]"}</p>}</div>}
+      {d.languageExam&&R.language&&<div><p className="font-bold">{R.language}. Provision regarding Hindi and Marathi Language Examination.—</p>{flags.P===1&&<p className="mt-1">(a) A Government Servant appointed by promotion to the post mentioned in Rule 3 shall either have passed the Hindi and Marathi language examinations, as regulated by the Marathi Language Department from time to time, or have been exempted from passing them, before promotion to the said post. In the absence of such qualification or exemption, promotion to the post shall not be admissible.</p>}{flags.N===1&&<p className="mt-1">{flags.P===1?"(b)":"(a)"} A Government Servant appointed by nomination to the post mentioned in Rule 3, who has not passed the Hindi and Marathi language examinations before appointment, shall be required to pass them within the prescribed time limit after appointment. Failure to do so shall result in withholding of annual increments, and promotion to any higher post shall not be admissible until such examinations are passed.</p>}</div>}
+      {d.computerCert&&R.computer&&<div><p className="font-bold">{R.computer}. Provision regarding Certificate of Computer Operations.—</p>{flags.P===1&&<p className="mt-1">(a) A Government Servant appointed by promotion to the post mentioned in Rule 3 shall either possess a Certificate of Computer Operations as regulated by the Government (General Administration Department / Information Technology) from time to time, or have obtained exemption on grounds of age, before promotion. In the absence of such certificate or exemption, promotion shall not be admissible.</p>}{flags.N===1&&!d.isCPTP&&<p className="mt-1">{flags.P===1?"(b)":"(a)"} A Government Servant appointed by nomination who does not possess a Certificate of Computer Operations before appointment shall be required to obtain such certificate within the prescribed time limit. Failure to do so shall result in withholding of annual increments, and promotion shall not be admissible until such certificate is obtained.</p>}{flags.N===1&&d.isCPTP&&<p className="mt-1">{flags.P===1?"(b)":"(a)"} A Government Servant appointed by nomination to the post mentioned in Rule 3 and undergoing training under the Combined Probationary Training Programme (CPTP), who clears the Post-Graduate Course under CPTP as provided vide GAD (Information Technology) Government Resolution dated 30.07.2019, shall be treated as having passed the Computer Eligibility Examination. Future orders issued in this behalf shall also be applicable.</p>}</div>}
+      {d.smallFamily&&R.smallFamily&&<div><p className="font-bold">{R.smallFamily}. Provision regarding Small Family Affidavit.—</p><p className="mt-1">(1) A person appointed to the posts under Rule 3 by nomination shall be required to submit a small family affidavit at the time of appointment as per the provisions of the Maharashtra Civil Services (Affidavit of Small Families) Rules, 2005 and the rules made thereunder from time to time.</p><p className="mt-1">(2) If it is found that the number of children in the small family affidavit is more than two, the candidate concerned shall be ineligible for government appointment.</p><p className="mt-1">(3) After a person is appointed to the Government service, if it is proved that he has more than two children at the time of appointment or thereafter, that person shall be disqualified for Government service.</p></div>}
+      {R.transfer&&<div><p className="font-bold">{R.transfer}. Provision regarding Transfer.—</p><p className="mt-1">The seniority list of persons appointed to the post mentioned in Rule 3 shall be maintained at <span className="font-semibold">{tlevel.label}</span>. Accordingly, such persons shall be eligible for transfer {tlevel.text}.</p>{d.separateSeniorityForPromotion&&<p className="mt-1">Provided that, for the purpose of promotion to the next higher post, the seniority lists maintained at {tlevel.label} shall be consolidated into a State-level seniority list on the basis of date of appointment.</p>}</div>}
+      {d.hasCompassionate&&<p><span className="font-bold">[Additional Rule].</span> Compassionate Appointment.— The provisions regarding appointment on compassionate grounds, as per the policy of the Government from time to time, shall be applicable to the post mentioned in Rule 3.</p>}
+      {d.otherRules&&R.otherRules&&<p><span className="font-bold">{R.otherRules}. Applicability of Other Orders/Rules regarding Services after Entry into Government Service.—</span> After being appointed to the Government service, the terms and conditions fixed by the Government order on behalf of the State Government shall remain applicable to the person concerned.</p>}
+      {d.additionalProvisions&&R.additional&&<div><p className="font-bold">{R.additional}. Additional Provisions.—</p><p className="mt-1 whitespace-pre-wrap">{d.additionalProvisions}</p></div>}
+      <div className="mt-8 text-right">
+        <p>By order and in the name of the Governor of Maharashtra,</p>
+        <div className="mt-6">
+          <p className="font-bold">{d.signatoryName||"[SIGNATORY NAME]"},</p>
+          <p>{d.signatoryDesignation||"[DESIGNATION]"},</p>
+          <p>{d.deptName||"[DEPARTMENT NAME]"}.</p>
+        </div>
+      </div>
+    </div>
+  </div>);
+}
+
+const STEPS=["Department & Post","Post Details","Definitions","Mode of Appointment","Departmental Examination","Probation & Language","Other Provisions & Signatory","Preview & Export"];
+function App(){
+  const [step,setStep]=useState(0);
+  const [data,setData]=useState(defaultData);
+  const [copied,setCopied]=useState(false);
+  const set=(k,v)=>setData(p=>({...p,[k]:v}));
+  const handleCopy=()=>{const el=document.getElementById("preview-content");if(el){navigator.clipboard.writeText(el.innerText).then(()=>{setCopied(true);setTimeout(()=>setCopied(false),2000);});}};
+  const handlePrint=()=>{const el=document.getElementById("preview-content");if(!el)return;const w=window.open("","_blank");w.document.write(`<html><head><title>Recruitment Rule</title><style>body{font-family:Georgia,serif;font-size:13px;line-height:1.8;margin:40px 60px;color:#111}.font-bold,.font-semibold{font-weight:700}.italic{font-style:italic}.text-center{text-align:center}.text-right{text-align:right}.uppercase{text-transform:uppercase}.tracking-wide{letter-spacing:0.05em}.ml-4{margin-left:1.5rem}.ml-8{margin-left:3rem}.mt-1{margin-top:0.3rem}.mt-2{margin-top:0.5rem}.mt-6{margin-top:1.5rem}.mt-8{margin-top:2rem}.space-y-4>*+*,.space-y-3>*+*{margin-top:0.5rem}.text-xs{font-size:0.75rem}.text-lg{font-size:1.1rem}</style></head><body>${el.innerHTML}</body></html>`);w.document.close();w.focus();setTimeout(()=>w.print(),500);};
+  const steps=[<Step1 d={data} set={set}/>,<Step2 d={data} set={set}/>,<Step3 d={data} set={set}/>,<Step4 d={data} set={set}/>,<Step5 d={data} set={set}/>,<Step6 d={data} set={set}/>,<Step7 d={data} set={set}/>,<div id="preview-content"><Preview d={data}/></div>];
+  return(<div className="min-h-screen bg-gray-50">
+    <div className="bg-white border-b border-gray-200 px-4 overflow-x-auto flex items-center justify-between gap-3 sticky top-0 z-10"><div className="flex gap-1 min-w-max py-2">{STEPS.map((s,i)=>(<button key={i} onClick={()=>setStep(i)} className={`px-3 py-1.5 rounded-md text-xs font-medium transition whitespace-nowrap ${i===step?"bg-blue-600 text-white":"text-gray-500 hover:bg-gray-100"}`}>{i===STEPS.length-1?"":""}{s}</button>))}</div><div className="text-xs text-gray-400 whitespace-nowrap pr-2">Step {step+1} of {STEPS.length}</div></div>
+    <div className="h-1 bg-gray-200"><div className="h-1 bg-blue-500 transition-all" style={{width:`${((step+1)/STEPS.length)*100}%`}}/></div>
+    <div className="max-w-3xl mx-auto px-4 py-6">
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-xl font-bold text-gray-800">{STEPS[step]}</h2>
+        {step===STEPS.length-1&&(<div className="flex gap-2"><button onClick={handleCopy} className={`text-sm px-4 py-2 rounded-lg font-medium transition ${copied?"bg-green-500 text-white":"bg-blue-600 text-white hover:bg-blue-700"}`}>{copied?"Copied!":"Copy Text"}</button><button onClick={handlePrint} className="text-sm px-4 py-2 rounded-lg font-medium bg-gray-700 text-white hover:bg-gray-800 transition">Print / Save PDF</button></div>)}
+      </div>
+      {steps[step]}
+      <div className="flex justify-between mt-6">
+        <button onClick={()=>setStep(s=>Math.max(0,s-1))} disabled={step===0} className="px-5 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-600 disabled:opacity-30 hover:bg-gray-50 transition">← Previous</button>
+        {step<STEPS.length-1?<button onClick={()=>setStep(s=>s+1)} className="px-5 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition">Next →</button>:<button onClick={()=>setStep(0)} className="px-5 py-2 rounded-lg bg-gray-700 text-white text-sm font-medium hover:bg-gray-800 transition">Edit Again</button>}
+      </div>
+    </div>
+  </div>);
+}
+ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+</body>
+</html>

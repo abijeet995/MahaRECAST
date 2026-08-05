@@ -1,0 +1,12 @@
+# Vercel project-link metadata (machine-specific, created by `vercel link`)
+.vercel
+
+# Editor/agent backup snapshots — not meant to be versioned
+*.bak
+
+# Local Claude Code tool permissions (machine-specific)
+.claude/
+
+# OS cruft
+.DS_Store
+Thumbs.db
