@@ -1578,6 +1578,14 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .cwe-context .muted { color:var(--slate); }
   .cwe-body { display:grid; grid-template-columns:minmax(230px,1fr) minmax(300px,1.25fr) minmax(190px,.72fr); gap:22px; align-items:start; }
 
+  /* Scope line — which Department/Establishment the whole Overview tab (KPIs,
+     pyramid, tables) is currently reflecting. Sits right under the filter bar,
+     above the KPI row, so it never has to be guessed from the dropdowns alone. */
+  .ov-scope { display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-soft); margin:0 0 14px; }
+  .ov-scope svg { width:16px; height:16px; flex:none; color:var(--saffron); }
+  .ov-scope b { color:var(--ink); font-weight:700; }
+  .ov-scope .ov-scope-sep { color:var(--slate); }
+
   /* pyramid — the one intentionally colorful visualization on the page: each band
      keeps its own hue from the canonical group palette (orange/amber/teal/blue),
      with a soft diagonal gradient rather than a flat fill. Selecting a band adds a
@@ -1586,17 +1594,27 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .ov-pyramid { width:100%; }
   .ovp-title { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:var(--text-soft); margin-bottom:12px; text-align:center; }
   .pyr-stack { display:flex; flex-direction:column; max-width:420px; margin:0 auto; }
-  .pyr-level { position:relative; width:100%; height:72px; border:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:filter .2s ease, transform .2s ease, box-shadow .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
-  .pyr-stack .pyr-level:nth-child(1) { clip-path:polygon(35% 0, 65% 0, 73.75% 100%, 26.25% 100%); background:linear-gradient(135deg, var(--group-a), #FF9A66); }
-  .pyr-stack .pyr-level:nth-child(2) { clip-path:polygon(26.25% 0, 73.75% 0, 82.5% 100%, 17.5% 100%); background:linear-gradient(135deg, var(--group-bg), #F0C572); }
-  .pyr-stack .pyr-level:nth-child(3) { clip-path:polygon(17.5% 0, 82.5% 0, 91.25% 100%, 8.75% 100%); background:linear-gradient(135deg, var(--group-bn), #6BC7C0); }
-  .pyr-stack .pyr-level:nth-child(4) { clip-path:polygon(8.75% 0, 91.25% 0, 100% 100%, 0 100%); background:linear-gradient(135deg, var(--group-c), #7AB3DC); }
-  .pyr-level:hover { filter:brightness(1.08); }
-  .pyr-level.active { box-shadow:0 0 0 2px rgba(255,255,255,.85), 0 8px 22px -6px rgba(33,29,24,.35); transform:scale(1.02); z-index:2; }
+  .pyr-level { position:relative; width:100%; height:72px; border:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
+  /* Shape lives on its own absolutely-positioned layer so its clip-path can morph to
+     reflect the department/establishment's real Group A/B/C mix (pyramid, hourglass,
+     diamond, inverted) without shrinking the button's click target or clipping the
+     name/count text — same split used by the RR Analysis hourglass
+     (.rra-band / .rra-band-shape). JS sets the live clip-path in renderGroupExplorer();
+     these nth-child rules are just the pre-JS/no-JS fallback shape. */
+  .pyr-shape { position:absolute; inset:0; z-index:0; transition:background .25s ease, clip-path .32s cubic-bezier(.4,0,.2,1), filter .2s ease; }
+  .pyr-stack .pyr-level:nth-child(1) .pyr-shape { clip-path:polygon(35% 0, 65% 0, 73.75% 100%, 26.25% 100%); background:linear-gradient(135deg, var(--group-a), #FF9A66); }
+  .pyr-stack .pyr-level:nth-child(2) .pyr-shape { clip-path:polygon(26.25% 0, 73.75% 0, 82.5% 100%, 17.5% 100%); background:linear-gradient(135deg, var(--group-bg), #F0C572); }
+  .pyr-stack .pyr-level:nth-child(3) .pyr-shape { clip-path:polygon(17.5% 0, 82.5% 0, 91.25% 100%, 8.75% 100%); background:linear-gradient(135deg, var(--group-bn), #6BC7C0); }
+  .pyr-stack .pyr-level:nth-child(4) .pyr-shape { clip-path:polygon(8.75% 0, 91.25% 0, 100% 100%, 0 100%); background:linear-gradient(135deg, var(--group-c), #7AB3DC); }
+  .pyr-level:hover .pyr-shape { filter:brightness(1.08); }
+  .pyr-level.active { transform:scale(1.02); z-index:2; }
+  .pyr-level.active .pyr-shape { filter:brightness(1.08) drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 8px 16px rgba(33,29,24,.3)); }
+  .pyr-name, .pyr-sub, .pyr-count { position:relative; z-index:1; }
   .pyr-name { font-size:14.5px; font-weight:700; }
   .pyr-sub { font-size:10.5px; font-weight:500; opacity:.85; }
   .pyr-count { font-size:11px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
   .pyr-level:focus-visible { outline:2px solid var(--ink); outline-offset:-4px; }
+  .ovp-shape-badge { display:inline-flex; align-self:center; margin:-4px auto 14px; font-size:10.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:4px 12px; }
 
   /* centre metrics */
   .cwe-metrics { min-width:0; }
@@ -1833,7 +1851,8 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   @media (max-width:560px) {
     .ovwrap { margin:0 -14px; padding:16px 14px; }
     .kpirow { grid-template-columns:1fr 1fr; }
-    .pyr-stack .pyr-level { clip-path:none !important; height:54px; margin-bottom:3px; border-radius:8px; }
+    .pyr-stack .pyr-level { height:54px; margin-bottom:3px; border-radius:8px; overflow:hidden; }
+    .pyr-stack .pyr-level .pyr-shape { clip-path:none !important; }
     .fb-field.search { grid-column:span 2; }
     .wf-children { grid-template-columns:1fr; gap:10px; }
     .wf-fork { display:none; }
@@ -1842,7 +1861,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
 
   /* reduced motion */
   @media (prefers-reduced-motion: reduce) {
-    .wf-fork, .wf-card, .kb-bar span, .pyr-level { transition:none !important; }
+    .wf-fork, .wf-card, .kb-bar span, .pyr-level, .pyr-shape { transition:none !important; }
     .wf-fork { opacity:1; }
     .wf-card { opacity:1; transform:none; }
     .rra-band, .rra-tooltip, .rra-cadre-row { transition:none !important; }
@@ -1949,6 +1968,12 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
       <div id="dashboard-content" style="display:none">
        <div class="ovwrap">
 
+        <!-- SCOPE LINE — which Department/Establishment the tab is reflecting -->
+        <div class="ov-scope" id="ov-scope">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/></svg>
+          <span id="ov-scope-text"><b>All Departments</b></span>
+        </div>
+
         <!-- KPI SUMMARY ROW -->
         <div class="kpirow">
           <div class="kc">
@@ -1978,20 +2003,25 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
             <!-- LEFT: pyramid -->
             <div class="ov-pyramid" role="radiogroup" aria-label="Select a cadre Group">
               <div class="ovp-title">Cadre Group Hierarchy</div>
+              <div class="ovp-shape-badge" id="ovp-shape-badge">—</div>
               <div class="pyr-stack">
                 <button type="button" class="pyr-level" data-group="A" role="radio" aria-checked="false" onclick="selectGroup('A')">
+                  <span class="pyr-shape" aria-hidden="true"></span>
                   <span class="pyr-name">Group A</span>
                   <span class="pyr-count" data-group="A">—</span>
                 </button>
                 <button type="button" class="pyr-level" data-group="B (Gazetted)" role="radio" aria-checked="false" onclick="selectGroup('B (Gazetted)')">
+                  <span class="pyr-shape" aria-hidden="true"></span>
                   <span class="pyr-name">Group B <span class="pyr-sub">Gazetted</span></span>
                   <span class="pyr-count" data-group="B (Gazetted)">—</span>
                 </button>
                 <button type="button" class="pyr-level" data-group="B (Non Gazetted)" role="radio" aria-checked="false" onclick="selectGroup('B (Non Gazetted)')">
+                  <span class="pyr-shape" aria-hidden="true"></span>
                   <span class="pyr-name">Group B <span class="pyr-sub">Non-Gazetted</span></span>
                   <span class="pyr-count" data-group="B (Non Gazetted)">—</span>
                 </button>
                 <button type="button" class="pyr-level" data-group="C" role="radio" aria-checked="false" onclick="selectGroup('C')">
+                  <span class="pyr-shape" aria-hidden="true"></span>
                   <span class="pyr-name">Group C</span>
                   <span class="pyr-count" data-group="C">—</span>
                 </button>
@@ -2917,14 +2947,27 @@ function renderGroupExplorer() {
   const f = currentFilters();
   const dEx = RAW_DATA.filter(r => matchesFilters(r, f, true) && !isDying(r)); // all filters except Group; Overview excludes dying
   const total = dEx.length;
-  // Pyramid counts + % of current filtered view
-  GROUP_DEFS.forEach(g => {
-    const c = dEx.reduce((n, r) => n + (r.Group === g ? 1 : 0), 0);
-    const pct = total ? (c / total * 100) : 0;
+  // Pyramid counts + % of current filtered view, in GROUP_DEFS order (A, B-Gaz, B-NonGaz, C)
+  const rawCounts = GROUP_DEFS.map(g => dEx.reduce((n, r) => n + (r.Group === g ? 1 : 0), 0));
+  const rawPcts = total ? rawCounts.map(c => c / total * 100) : GROUP_DEFS.map(() => 0);
+  GROUP_DEFS.forEach((g, i) => {
     document.querySelectorAll('.pyr-count[data-group="' + g + '"]').forEach(el => {
-      el.innerHTML = c.toLocaleString('en-IN') + ' cadres · ' + pct.toFixed(1) + '%';
+      el.innerHTML = rawCounts[i].toLocaleString('en-IN') + ' cadres · ' + rawPcts[i].toFixed(1) + '%';
     });
   });
+  // Shape the pyramid itself to the real A/B/C mix — same silhouette engine as the
+  // RR Analysis hourglass (classifyHourglassShape + buildBandClipPaths), so a
+  // department that's actually top-heavy or diamond-shaped reads as one at a glance
+  // instead of always showing the same fixed taper.
+  const [pctA, pctBG, pctBN, pctC] = rawPcts;
+  const shapeKey = classifyHourglassShape(pctA, pctBG, pctBN, pctC);
+  const clips = buildBandClipPaths(shapeKey);
+  document.querySelectorAll('.pyr-stack .pyr-level').forEach((el, i) => {
+    const shapeEl = el.querySelector('.pyr-shape');
+    if (shapeEl) shapeEl.style.clipPath = clips[i];
+  });
+  const badge = document.getElementById('ovp-shape-badge');
+  if (badge && HOURGLASS_SHAPE_INFO[shapeKey]) badge.textContent = HOURGLASS_SHAPE_INFO[shapeKey].label;
   // Highlight selected section (single source of truth = Group filter)
   const selected = f.group;
   document.querySelectorAll('.pyr-level').forEach(b => {
@@ -2938,6 +2981,16 @@ function renderGroupExplorer() {
     const parts = [ f.dept ? f.dept : 'All Departments' ];
     if (f.est) parts.push(f.est);
     ttl.innerHTML = parts.map(esc).join(' <span class="cwe-sep">·</span> ');
+  }
+  // Scope line under the filter bar — same dept/establishment context, restated
+  // up top so it doesn't have to be read off the dropdowns. Collapses to just
+  // "All Departments" when nothing is selected; adds the establishment only
+  // when one is actually picked (mirrors the cwe-title convention above).
+  const scopeText = document.getElementById('ov-scope-text');
+  if (scopeText) {
+    const scopeParts = [ '<b>' + (f.dept ? esc(f.dept) : 'All Departments') + '</b>' ];
+    if (f.est) scopeParts.push(esc(f.est));
+    scopeText.innerHTML = scopeParts.join(' <span class="ov-scope-sep">·</span> ');
   }
   // Centre metrics
   const mx = document.getElementById('cwe-metrics');
