@@ -1568,10 +1568,8 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .kb-legend i { width:8px; height:8px; border-radius:2px; flex:none; }
   .kb-legend b { color:var(--ink); font-weight:700; }
 
-  /* Cadre Workforce Explorer */
+  /* Cadre Workforce Explorer (card header removed — see HTML comment above .cwe) */
   .cwe { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:18px 20px; box-shadow:var(--shadow-sm); }
-  .cwe-head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
-  .cwe-title { font-size:14px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; color:var(--ink); }
   .cwe-sep { color:var(--border); font-weight:400; margin:0 2px; }
   .cwe-context { font-size:12px; color:var(--text-soft); }
   .cwe-context .accent { color:var(--saffron); font-weight:600; }
@@ -1581,10 +1579,10 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   /* Scope line — which Department/Establishment the whole Overview tab (KPIs,
      pyramid, tables) is currently reflecting. Sits right under the filter bar,
      above the KPI row, so it never has to be guessed from the dropdowns alone. */
-  .ov-scope { display:flex; align-items:center; gap:9px; font-size:16px; color:var(--text-soft); margin:0 0 14px; }
-  .ov-scope svg { width:19px; height:19px; flex:none; color:var(--saffron); }
-  .ov-scope b { color:var(--ink); font-weight:700; }
-  .ov-scope .ov-scope-sep { color:var(--slate); }
+  .ov-scope { display:flex; align-items:center; gap:12px; font-size:27px; color:var(--text-soft); margin:0 0 16px; letter-spacing:-.01em; }
+  .ov-scope svg { width:30px; height:30px; flex:none; color:var(--saffron); }
+  .ov-scope b { color:var(--ink); font-weight:800; }
+  .ov-scope .ov-scope-sep { color:var(--slate); font-weight:400; }
 
   /* pyramid — the one intentionally colorful visualization on the page: each band
      keeps its own hue from the canonical group palette (orange/amber/teal/blue),
@@ -1593,8 +1591,8 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
      regardless of selection state. */
   .ov-pyramid { width:100%; }
   .ovp-title { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:var(--text-soft); margin-bottom:12px; text-align:center; }
-  .pyr-stack { display:flex; flex-direction:column; max-width:420px; margin:0 auto; }
-  .pyr-level { position:relative; width:100%; height:72px; border:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .pyr-stack { display:flex; flex-direction:column; max-width:600px; margin:0 auto; }
+  .pyr-level { position:relative; width:100%; height:100px; border:none; background:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
   /* Shape lives on its own absolutely-positioned layer so its clip-path can morph to
      reflect the department/establishment's real Group A/B/C mix (pyramid, hourglass,
      diamond, inverted) without shrinking the button's click target or clipping the
@@ -1994,11 +1992,9 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
           </div>
         </div>
 
-        <!-- CADRE WORKFORCE EXPLORER -->
+        <!-- CADRE WORKFORCE EXPLORER (header intentionally omitted — dept/establishment
+             context is already stated once, prominently, in the scope line above) -->
         <div class="cwe">
-          <div class="cwe-head">
-            <div class="cwe-title" id="cwe-title">Cadre Workforce Explorer</div>
-          </div>
           <div class="cwe-body">
             <!-- LEFT: pyramid -->
             <div class="ov-pyramid" role="radiogroup" aria-label="Select a cadre Group">
@@ -3020,15 +3016,10 @@ function renderGroupExplorer() {
     b.classList.toggle('active', on);
     b.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  // Card header is a plain label now — the dept/establishment it's showing is
-  // already stated once, up top in the scope line (see below), so it isn't
-  // repeated here too.
-  const ttl = document.getElementById('cwe-title');
-  if (ttl) ttl.textContent = 'Cadre Workforce Explorer';
-  // Scope line under the filter bar — same dept/establishment context, restated
-  // up top so it doesn't have to be read off the dropdowns. Collapses to just
-  // "All Departments" when nothing is selected; adds the establishment only
-  // when one is actually picked (mirrors the cwe-title convention above).
+  // Scope line under the filter bar — the one place department/establishment
+  // context is stated (the "Cadre Workforce Explorer" card header that used to
+  // restate it here has been removed). Collapses to just "All Departments" when
+  // nothing is selected; adds the establishment only when one is actually picked.
   const scopeText = document.getElementById('ov-scope-text');
   if (scopeText) {
     const scopeParts = [ '<b>' + (f.dept ? esc(f.dept) : 'All Departments') + '</b>' ];
