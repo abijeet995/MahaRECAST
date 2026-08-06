@@ -1562,8 +1562,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .ov-scopebar-icon svg { width:26px; height:26px; }
   .ov-scopebar-text { min-width:0; }
   .ov-scopebar-name { font-size:24px; font-weight:800; color:var(--ink); letter-spacing:-.01em; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .ov-scopebar-sub { display:flex; align-items:center; gap:4px; font-size:14px; color:var(--text-soft); margin-top:2px; }
-  .ov-scopebar-sub svg { width:14px; height:14px; opacity:.7; flex:none; }
+  .ov-scopebar-sub { font-size:14px; color:var(--text-soft); margin-top:2px; }
   .ov-scopebar-stats { display:flex; gap:12px; flex-wrap:wrap; }
   .ov-stat-pill { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 20px; box-shadow:var(--shadow-sm); }
   .ov-stat-ic { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
@@ -1639,7 +1638,14 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .wf { display:flex; flex-direction:column; align-items:stretch; max-width:460px; }
   .wf-card { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 17px; box-shadow:var(--shadow-sm); }
   .wf-sanct { border-color:rgba(242,101,34,.35); background:var(--saffron-pale); }
+  .wf-card-head { display:flex; align-items:center; gap:9px; margin-bottom:2px; }
+  .wf-card-ic { width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
+  .wf-card-ic svg { width:15px; height:15px; }
+  .wf-sanct .wf-card-ic { background:rgba(242,101,34,.15); color:var(--saffron); }
+  .wf-dr .wf-card-ic { background:rgba(74,144,194,.15); color:var(--blue); }
+  .wf-prom .wf-card-ic { background:rgba(139,126,200,.17); color:var(--purple); }
   .wf-lbl { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-soft); }
+  .wf-card-head .wf-lbl { margin:0; }
   .wf-val { font-weight:800; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; margin-top:3px; }
   .wf-sanct .wf-val { font-size:34px; color:var(--saffron); }
   .wf-dr .wf-val { font-size:26px; color:var(--blue); }
@@ -1648,17 +1654,23 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   /* top card centered above the two branches */
   .wf-top { display:flex; justify-content:center; }
   .wf-top .wf-card { max-width:300px; }
+  /* "Break-up of Total Sanctioned Posts" divider between the top card and the fork */
+  .wf-breakup-label { display:flex; align-items:center; gap:10px; margin:14px 0 2px; }
+  .wf-bl-line { flex:1; height:0; border-top:1.5px dashed rgba(242,101,34,.4); }
+  .wf-bl-text { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--saffron-hover); white-space:nowrap; }
+  .wf.drawn .wf-breakup-label { opacity:1; }
+  .wf-breakup-label { opacity:0; transition:opacity .3s ease .08s; }
   /* two-branch children */
   .wf-children { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
   .wf-dr { border-color:rgba(74,144,194,.3); background:rgba(74,144,194,.06); }
   .wf-prom { border-color:rgba(139,126,200,.28); background:rgba(139,126,200,.06); }
   .wf-prom .wf-val.wf-nt { font-size:19px; color:var(--text-soft); font-weight:700; letter-spacing:0; }
   /* fork connector (⊓) linking sanctioned to the two branches */
-  .wf-fork { position:relative; height:24px; }
+  .wf-fork { position:relative; height:22px; }
   .fk-stem, .fk-bar, .fk-drop { position:absolute; background:var(--saffron); opacity:.85; }
-  .fk-stem { left:50%; top:0; width:2px; height:12px; transform:translateX(-50%); }
-  .fk-bar  { left:25%; right:25%; top:11px; height:2px; }
-  .fk-drop { top:11px; width:2px; height:13px; }
+  .fk-stem { left:50%; top:0; width:2px; height:10px; transform:translateX(-50%); }
+  .fk-bar  { left:25%; right:25%; top:9px; height:2px; }
+  .fk-drop { top:9px; width:2px; height:13px; }
   .fk-drop-l { left:25%; }
   .fk-drop-r { right:25%; }
   .wf-fork { opacity:0; transition:opacity .3s ease .12s; }
@@ -1674,11 +1686,29 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .mm-empty-title { font-size:16px; font-weight:700; color:var(--ink); margin-bottom:7px; }
   .mm-empty p { font-size:12.5px; line-height:1.6; margin:0; }
 
-  /* about card */
-  .cwe-about { background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius-md); padding:14px 16px; }
-  .about-title { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); margin-bottom:9px; }
-  .cwe-about p { font-size:11.5px; line-height:1.55; color:var(--text); margin:0 0 9px; }
-  .cwe-about p:last-child { margin-bottom:0; }
+  /* about card — one icon+title+description row per metric, plus a note callout */
+  .cwe-about { background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 17px; }
+  .about-head { display:flex; align-items:center; gap:8px; margin-bottom:13px; }
+  .about-head-ic { width:22px; height:22px; border-radius:7px; flex:none; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); color:var(--saffron); }
+  .about-head-ic svg { width:13px; height:13px; }
+  .about-title { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); margin:0; }
+  .about-item { display:flex; gap:11px; padding:11px 0; border-top:1px solid var(--border); }
+  .about-item:first-of-type { padding-top:0; border-top:none; }
+  .about-item-ic { width:26px; height:26px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; margin-top:1px; }
+  .about-item-ic svg { width:13px; height:13px; }
+  .about-ic-sanct { background:rgba(242,101,34,.15); color:var(--saffron); }
+  .about-ic-dr { background:rgba(74,144,194,.15); color:var(--blue); }
+  .about-ic-prom { background:rgba(139,126,200,.17); color:var(--purple); }
+  .about-item-body { min-width:0; }
+  .about-item-title { font-size:12px; font-weight:700; margin-bottom:3px; }
+  .about-title-sanct { color:var(--saffron-hover); }
+  .about-title-dr { color:var(--blue); }
+  .about-title-prom { color:var(--purple); }
+  .about-item-body p { font-size:11.5px; line-height:1.55; color:var(--text); margin:0; }
+  .about-note { display:flex; gap:9px; margin-top:4px; padding:11px 13px; background:var(--saffron-pale); border:1px solid rgba(242,101,34,.25); border-radius:var(--radius-md); }
+  .about-note svg { width:15px; height:15px; flex:none; margin-top:1px; color:var(--saffron); }
+  .about-note p { font-size:11.5px; line-height:1.5; color:var(--text); margin:0; }
+  .about-note b { color:var(--ink); }
 
   /* Top 5 tables */
   .top5row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -1990,7 +2020,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
             <div class="ov-scopebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/></svg></div>
             <div class="ov-scopebar-text">
               <div class="ov-scopebar-name" id="ov-scopebar-name">All Departments</div>
-              <div class="ov-scopebar-sub" id="ov-scopebar-sub">All Establishments <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+              <div class="ov-scopebar-sub" id="ov-scopebar-sub">All Establishments</div>
             </div>
           </div>
           <div class="ov-scopebar-stats">
@@ -2046,9 +2076,35 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
             <div class="cwe-metrics" id="cwe-metrics" aria-live="polite"></div>
             <!-- RIGHT: about -->
             <div class="cwe-about">
-              <div class="about-title">About These Metrics</div>
-              <p>Sanctioned posts represent the total approved posts for the selected group, filled through Direct Recruitment and Promotion.</p>
-              <p>Direct Recruitment Posts are reported directly in the source sheet. Promotion Posts are not recorded as a number, so they are shown as “Not tracked.”</p>
+              <div class="about-head">
+                <div class="about-head-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                <div class="about-title">About These Metrics</div>
+              </div>
+              <div class="about-item">
+                <div class="about-item-ic about-ic-sanct"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
+                <div class="about-item-body">
+                  <div class="about-item-title about-title-sanct">Total Sanctioned Posts</div>
+                  <p>Total number of posts approved for the selected group across all cadres, including posts to be filled through direct recruitment and promotion.</p>
+                </div>
+              </div>
+              <div class="about-item">
+                <div class="about-item-ic about-ic-dr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+                <div class="about-item-body">
+                  <div class="about-item-title about-title-dr">Direct Recruitment Posts</div>
+                  <p>Number of sanctioned posts intended to be filled through open competition from eligible candidates, as per recruitment rules.</p>
+                </div>
+              </div>
+              <div class="about-item">
+                <div class="about-item-ic about-ic-prom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+                <div class="about-item-body">
+                  <div class="about-item-title about-title-prom">Promotion Posts</div>
+                  <p>Number of sanctioned posts intended to be filled by promoting existing eligible employees, as per recruitment rules. Not recorded as a number in the source sheet, so shown as “Not tracked.”</p>
+                </div>
+              </div>
+              <div class="about-note">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-7 7c0 2.4 1.2 4.5 3 5.7V17h8v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 0 0-7-7z"/></svg>
+                <p><b>Note:</b> Direct Recruitment Posts and Promotion Posts are subsets of the Total Sanctioned Posts.</p>
+              </div>
             </div>
           </div>
         </div>
@@ -2909,6 +2965,11 @@ function groupPlain(g) {
 }
 // A cadre is "dying" per the 'To be Reviewed' column (Active | Dying). Overview excludes these.
 function isDying(r) { return (r.Status || '').trim().toLowerCase() === 'dying'; }
+// "Active" is its own explicit Cadre Status value, not just "anything that isn't
+// Dying" — the Status column also holds non-active, non-dying states (Contractual,
+// Deputation, Promotion, Repeat Entry, Post not sanctioned, To be Outsourced,
+// Different Recruitment), which must NOT be counted in "Total Active Cadres".
+function isActive(r) { return (r.Status || '').trim().toLowerCase() === 'active'; }
 
 function emptyMetrics() {
   return `<div class="mm-empty">
@@ -2933,10 +2994,16 @@ function metricsHTML(group, rows, w, f) {
     <div class="wf">
       <div class="wf-top">
         <div class="wf-card wf-sanct">
-          <div class="wf-lbl">Total Sanctioned Posts</div>
+          <div class="wf-card-head">
+            <div class="wf-card-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></div>
+            <div class="wf-lbl">Total Sanctioned Posts</div>
+          </div>
           <div class="wf-val" data-target="${Math.round(sanct)}">0</div>
           <div class="wf-note">${sanctNote}</div>
         </div>
+      </div>
+      <div class="wf-breakup-label" aria-hidden="true">
+        <span class="wf-bl-line"></span><span class="wf-bl-text">Break-up of Total Sanctioned Posts</span><span class="wf-bl-line"></span>
       </div>
       <div class="wf-fork" aria-hidden="true">
         <span class="fk-stem"></span><span class="fk-bar"></span>
@@ -2944,12 +3011,18 @@ function metricsHTML(group, rows, w, f) {
       </div>
       <div class="wf-children">
         <div class="wf-card wf-dr" title="Direct Recruitment reported by ${w.dN} of ${cadreCount} cadres">
-          <div class="wf-lbl">Direct Recruitment Posts</div>
+          <div class="wf-card-head">
+            <div class="wf-card-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="wf-lbl">Direct Recruitment Posts</div>
+          </div>
           <div class="wf-val" data-target="${Math.round(w.dSum)}">0</div>
           <div class="wf-note">${drPct}</div>
         </div>
         <div class="wf-card wf-prom" title="Promotion posts are not recorded as a number in the source sheet">
-          <div class="wf-lbl">Promotion Posts</div>
+          <div class="wf-card-head">
+            <div class="wf-card-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
+            <div class="wf-lbl">Promotion Posts</div>
+          </div>
           <div class="wf-val wf-nt">Not tracked</div>
           <div class="wf-note">not recorded in source sheet</div>
         </div>
@@ -3043,15 +3116,7 @@ function renderGroupExplorer() {
   const scopebarName = document.getElementById('ov-scopebar-name');
   if (scopebarName) scopebarName.textContent = f.dept ? f.dept : 'All Departments';
   const scopebarSub = document.getElementById('ov-scopebar-sub');
-  if (scopebarSub) {
-    const subLabel = f.est ? f.est : 'All Establishments';
-    let textNode = scopebarSub.firstChild;
-    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
-      textNode = document.createTextNode('');
-      scopebarSub.insertBefore(textNode, scopebarSub.firstChild);
-    }
-    textNode.textContent = subLabel + ' ';
-  }
+  if (scopebarSub) scopebarSub.textContent = f.est ? f.est : 'All Establishments';
   // Centre metrics
   const mx = document.getElementById('cwe-metrics');
   if (mx) {
@@ -3159,14 +3224,10 @@ function resetAllFilters() {
 // KPIs
 // ─────────────────────────────────────────────
 function updateKPIs() {
-  const d = FILTERED_DATA.filter(r => !isDying(r));   // Overview excludes dying cadres
-  const n = d.length;
-  const depts = new Set(d.map(r => r.Department).filter(Boolean)).size;
-  const estabs = new Set(d.map(r => r.Establishment).filter(Boolean)).size;
-
-  set('kpi-total', n.toLocaleString('en-IN'));
-  set('kpi-depts', depts.toLocaleString('en-IN'));
-  set('kpi-establishments', estabs.toLocaleString('en-IN'));
+  // Total Active Cadres = count whose Cadre Status is explicitly "Active" — not
+  // simply "not Dying" (the Status column has other non-active states too).
+  const activeCount = FILTERED_DATA.filter(r => isActive(r)).length;
+  set('kpi-total', activeCount.toLocaleString('en-IN'));
 
   // Dying Cadres = count marked "Dying" within the current filtered view
   const dying = FILTERED_DATA.filter(r => isDying(r)).length;
