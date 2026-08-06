@@ -1603,7 +1603,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
      highlight ring instead of overwriting its color, so the group identity holds
      regardless of selection state. */
   .ov-pyramid { width:100%; }
-  .ovp-title { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:var(--text-soft); margin-bottom:12px; text-align:center; }
+  .ovp-title { font-size:23px; font-weight:800; letter-spacing:-.01em; color:var(--ink); margin-bottom:14px; text-align:center; }
   .pyr-stack { display:flex; flex-direction:column; max-width:600px; margin:0 auto; }
   .pyr-level { position:relative; width:100%; height:100px; border:none; background:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
   /* Shape lives on its own absolutely-positioned layer so its clip-path can morph to
@@ -1635,33 +1635,37 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .sg-name { font-size:20px; font-weight:800; letter-spacing:-.01em; margin-top:2px; color:var(--ink); }
   .sg-name span { color:var(--saffron); font-weight:600; font-size:15px; }
   .sg-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
-  .wf { display:flex; flex-direction:column; align-items:stretch; max-width:460px; }
-  .wf-card { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:13px 17px; box-shadow:var(--shadow-sm); }
+  /* margin-top nudges the breakdown down so its top card lines up with where the
+     pyramid's colored shape actually begins (below the big title + shape badge
+     in the left column), not with the "Selected Group" header text. */
+  .wf { display:flex; flex-direction:column; align-items:stretch; max-width:520px; margin-top:30px; }
+  .wf-card { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:17px 21px; box-shadow:var(--shadow-sm); }
   .wf-sanct { border-color:rgba(242,101,34,.35); background:var(--saffron-pale); }
-  .wf-card-head { display:flex; align-items:center; gap:9px; margin-bottom:2px; }
-  .wf-card-ic { width:30px; height:30px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
-  .wf-card-ic svg { width:15px; height:15px; }
+  .wf-card-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .wf-card-ic { width:34px; height:34px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
+  .wf-card-ic svg { width:17px; height:17px; }
   .wf-sanct .wf-card-ic { background:rgba(242,101,34,.15); color:var(--saffron); }
   .wf-dr .wf-card-ic { background:rgba(74,144,194,.15); color:var(--blue); }
   .wf-prom .wf-card-ic { background:rgba(139,126,200,.17); color:var(--purple); }
-  .wf-lbl { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text-soft); }
+  .wf-lbl { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--ink); }
   .wf-card-head .wf-lbl { margin:0; }
-  .wf-val { font-weight:800; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; margin-top:3px; }
-  .wf-sanct .wf-val { font-size:34px; color:var(--saffron); }
-  .wf-dr .wf-val { font-size:26px; color:var(--blue); }
-  .wf-prom .wf-val { font-size:26px; color:var(--purple); }
-  .wf-note { font-size:10.5px; color:var(--text-soft); margin-top:3px; }
+  .wf-val { font-weight:800; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; margin-top:5px; }
+  .wf-sanct .wf-val { font-size:38px; color:var(--saffron); }
+  .wf-dr .wf-val { font-size:28px; color:var(--blue); }
+  .wf-prom .wf-val { font-size:28px; color:var(--purple); }
+  .wf-note { font-size:11px; color:var(--text-soft); margin-top:4px; }
   /* top card centered above the two branches */
   .wf-top { display:flex; justify-content:center; }
-  .wf-top .wf-card { max-width:300px; }
+  .wf-top .wf-card { max-width:340px; width:100%; }
   /* "Break-up of Total Sanctioned Posts" divider between the top card and the fork */
-  .wf-breakup-label { display:flex; align-items:center; gap:10px; margin:14px 0 2px; }
+  .wf-breakup-label { display:flex; align-items:center; gap:10px; margin:16px 0 2px; }
   .wf-bl-line { flex:1; height:0; border-top:1.5px dashed rgba(242,101,34,.4); }
-  .wf-bl-text { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--saffron-hover); white-space:nowrap; }
+  .wf-bl-text { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; color:var(--saffron-hover); white-space:nowrap; }
   .wf.drawn .wf-breakup-label { opacity:1; }
   .wf-breakup-label { opacity:0; transition:opacity .3s ease .08s; }
-  /* two-branch children */
-  .wf-children { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start; }
+  /* two-branch children — stretch so Direct Recruitment / Promotion match heights
+     even when one label wraps to a second line and the other doesn't */
+  .wf-children { display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:stretch; }
   .wf-dr { border-color:rgba(74,144,194,.3); background:rgba(74,144,194,.06); }
   .wf-prom { border-color:rgba(139,126,200,.28); background:rgba(139,126,200,.06); }
   .wf-prom .wf-val.wf-nt { font-size:19px; color:var(--text-soft); font-weight:700; letter-spacing:0; }
@@ -2098,7 +2102,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
                 <div class="about-item-ic about-ic-prom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
                 <div class="about-item-body">
                   <div class="about-item-title about-title-prom">Promotion Posts</div>
-                  <p>Number of sanctioned posts intended to be filled by promoting existing eligible employees, as per recruitment rules. Not recorded as a number in the source sheet, so shown as “Not tracked.”</p>
+                  <p>Number of sanctioned posts intended to be filled by promoting existing eligible employees, as per recruitment rules. This isn't currently recorded as a number, so it's shown as “Not tracked.”</p>
                 </div>
               </div>
               <div class="about-note">
@@ -2984,7 +2988,6 @@ function metricsHTML(group, rows, w, f) {
   const deptCtx = f.dept ? ('in ' + esc(f.dept)) : 'across all departments';
   const sanct = w.sSum;
   const drPct  = sanct > 0 ? (w.dSum / sanct * 100).toFixed(1) + '% of sanctioned posts' : 'no sanctioned-post data';
-  const sanctNote = w.sN > 0 ? `across ${w.sN} of ${cadreCount} cadres` : 'no sanctioned-post data';
   return `
     <div class="sg-head">
       <div class="sg-lbl">Selected Group</div>
@@ -2999,7 +3002,6 @@ function metricsHTML(group, rows, w, f) {
             <div class="wf-lbl">Total Sanctioned Posts</div>
           </div>
           <div class="wf-val" data-target="${Math.round(sanct)}">0</div>
-          <div class="wf-note">${sanctNote}</div>
         </div>
       </div>
       <div class="wf-breakup-label" aria-hidden="true">
@@ -3018,13 +3020,12 @@ function metricsHTML(group, rows, w, f) {
           <div class="wf-val" data-target="${Math.round(w.dSum)}">0</div>
           <div class="wf-note">${drPct}</div>
         </div>
-        <div class="wf-card wf-prom" title="Promotion posts are not recorded as a number in the source sheet">
+        <div class="wf-card wf-prom" title="Promotion posts are not recorded as a number">
           <div class="wf-card-head">
             <div class="wf-card-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
             <div class="wf-lbl">Promotion Posts</div>
           </div>
           <div class="wf-val wf-nt">Not tracked</div>
-          <div class="wf-note">not recorded in source sheet</div>
         </div>
       </div>
     </div>`;
