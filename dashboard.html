@@ -1551,14 +1551,36 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .ovwrap { background:var(--bg); margin:0 -20px; padding:20px 26px 26px; color:var(--ink); display:flex; flex-direction:column; gap:16px; }
   #dashboard-content .ovwrap { margin-top:-16px; }
 
-  /* KPI summary row */
-  .kpirow { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; }
-  .kc { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:12px 14px; display:flex; flex-direction:column; gap:2px; min-width:0; box-shadow:var(--shadow-sm); }
-  .kc-ic { width:26px; height:26px; border-radius:7px; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); color:var(--saffron); margin-bottom:4px; }
-  .kc-ic svg { width:15px; height:15px; }
-  .kc-val { font-size:25px; font-weight:800; letter-spacing:-.02em; line-height:1; font-variant-numeric:tabular-nums; color:var(--ink); }
-  .kc-lbl { font-size:9.5px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; color:var(--text-soft); }
-  .kc.accent .kc-val { color:var(--saffron); }
+  /* Scope bar — identity (department/establishment) + the two counts that stay
+     meaningful at any scope level (Active / Dying). Sits right under the filter
+     bar, above the pyramid card. Department/Establishment *counts* (the old
+     4-card KPI row) were dropped here on purpose: once you've drilled into one,
+     "Departments: 1" doesn't tell you anything — the name alone does that job. */
+  .ov-scopebar { display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px 22px; }
+  .ov-scopebar-id { display:flex; align-items:center; gap:16px; min-width:0; }
+  .ov-scopebar-icon { width:52px; height:52px; border-radius:14px; flex:none; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); color:var(--saffron); }
+  .ov-scopebar-icon svg { width:26px; height:26px; }
+  .ov-scopebar-text { min-width:0; }
+  .ov-scopebar-name { font-size:24px; font-weight:800; color:var(--ink); letter-spacing:-.01em; line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ov-scopebar-sub { display:flex; align-items:center; gap:4px; font-size:14px; color:var(--text-soft); margin-top:2px; }
+  .ov-scopebar-sub svg { width:14px; height:14px; opacity:.7; flex:none; }
+  .ov-scopebar-stats { display:flex; gap:12px; flex-wrap:wrap; }
+  .ov-stat-pill { display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:10px 20px; box-shadow:var(--shadow-sm); }
+  .ov-stat-ic { width:40px; height:40px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
+  .ov-stat-ic svg { width:20px; height:20px; }
+  .ov-stat-body { display:flex; flex-direction:column; gap:2px; }
+  .ov-stat-lbl { font-size:12px; font-weight:600; color:var(--text-soft); white-space:nowrap; }
+  .ov-stat-val { font-size:23px; font-weight:800; letter-spacing:-.01em; line-height:1; font-variant-numeric:tabular-nums; color:var(--ink); }
+  .ov-stat-pill.is-active { border-color:rgba(79,155,110,.35); }
+  .ov-stat-pill.is-active .ov-stat-ic { background:rgba(79,155,110,.14); color:var(--green); }
+  .ov-stat-pill.is-active .ov-stat-val { color:var(--green); }
+  .ov-stat-pill.is-dying { border-color:rgba(217,83,79,.35); }
+  .ov-stat-pill.is-dying .ov-stat-ic { background:rgba(217,83,79,.14); color:var(--red); }
+  .ov-stat-pill.is-dying .ov-stat-val { color:var(--red); }
+  @media (max-width:640px) {
+    .ov-scopebar { padding:14px 16px; }
+    .ov-scopebar-name { font-size:19px; }
+  }
   .kc-breakup { gap:8px; justify-content:center; }
   .kb-top { display:flex; align-items:baseline; justify-content:space-between; }
   .kb-bar { height:9px; border-radius:6px; overflow:hidden; display:flex; background:var(--bg-alt); }
@@ -1575,14 +1597,6 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .cwe-context .accent { color:var(--saffron); font-weight:600; }
   .cwe-context .muted { color:var(--slate); }
   .cwe-body { display:grid; grid-template-columns:minmax(230px,1fr) minmax(300px,1.25fr) minmax(190px,.72fr); gap:22px; align-items:start; }
-
-  /* Scope line — which Department/Establishment the whole Overview tab (KPIs,
-     pyramid, tables) is currently reflecting. Sits right under the filter bar,
-     above the KPI row, so it never has to be guessed from the dropdowns alone. */
-  .ov-scope { display:flex; align-items:center; gap:12px; font-size:27px; color:var(--text-soft); margin:0 0 16px; letter-spacing:-.01em; }
-  .ov-scope svg { width:30px; height:30px; flex:none; color:var(--saffron); }
-  .ov-scope b { color:var(--ink); font-weight:800; }
-  .ov-scope .ov-scope-sep { color:var(--slate); font-weight:400; }
 
   /* pyramid — the one intentionally colorful visualization on the page: each band
      keeps its own hue from the canonical group palette (orange/amber/teal/blue),
@@ -1966,29 +1980,34 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
       <div id="dashboard-content" style="display:none">
        <div class="ovwrap">
 
-        <!-- SCOPE LINE — which Department/Establishment the tab is reflecting -->
-        <div class="ov-scope" id="ov-scope">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/></svg>
-          <span id="ov-scope-text"><b>All Departments</b></span>
-        </div>
-
-        <!-- KPI SUMMARY ROW -->
-        <div class="kpirow">
-          <div class="kc">
-            <div class="kc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/></svg></div>
-            <div class="kc-val" id="kpi-depts">—</div><div class="kc-lbl">Departments</div>
+        <!-- SCOPE BAR — which Department/Establishment the tab is reflecting, plus the
+             two counts that stay meaningful at any scope (Active / Dying). Replaces the
+             old separate scope line + 4-card KPI row: Departments/Establishments counts
+             are redundant once you've drilled into one (it's just "1"), so this keeps
+             only what's still informative once you scope down. -->
+        <div class="ov-scopebar" id="ov-scopebar">
+          <div class="ov-scopebar-id">
+            <div class="ov-scopebar-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 9h.01M15 9h.01M9 13h.01M15 13h.01M9 17h.01M15 17h.01"/></svg></div>
+            <div class="ov-scopebar-text">
+              <div class="ov-scopebar-name" id="ov-scopebar-name">All Departments</div>
+              <div class="ov-scopebar-sub" id="ov-scopebar-sub">All Establishments <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div>
+            </div>
           </div>
-          <div class="kc">
-            <div class="kc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
-            <div class="kc-val" id="kpi-establishments">—</div><div class="kc-lbl">Establishments</div>
-          </div>
-          <div class="kc accent">
-            <div class="kc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
-            <div class="kc-val" id="kpi-total">—</div><div class="kc-lbl">Total Cadres</div>
-          </div>
-          <div class="kc">
-            <div class="kc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="kc-val" id="kpi-dying">—</div><div class="kc-lbl">Dying Cadres</div>
+          <div class="ov-scopebar-stats">
+            <div class="ov-stat-pill is-active">
+              <div class="ov-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+              <div class="ov-stat-body">
+                <div class="ov-stat-lbl">Total Active Cadres</div>
+                <div class="ov-stat-val" id="kpi-total">—</div>
+              </div>
+            </div>
+            <div class="ov-stat-pill is-dying">
+              <div class="ov-stat-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+              <div class="ov-stat-body">
+                <div class="ov-stat-lbl">Dying Cadres</div>
+                <div class="ov-stat-val" id="kpi-dying">—</div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3016,15 +3035,22 @@ function renderGroupExplorer() {
     b.classList.toggle('active', on);
     b.setAttribute('aria-checked', on ? 'true' : 'false');
   });
-  // Scope line under the filter bar — the one place department/establishment
-  // context is stated (the "Cadre Workforce Explorer" card header that used to
-  // restate it here has been removed). Collapses to just "All Departments" when
-  // nothing is selected; adds the establishment only when one is actually picked.
-  const scopeText = document.getElementById('ov-scope-text');
-  if (scopeText) {
-    const scopeParts = [ '<b>' + (f.dept ? esc(f.dept) : 'All Departments') + '</b>' ];
-    if (f.est) scopeParts.push(esc(f.est));
-    scopeText.innerHTML = scopeParts.join(' <span class="ov-scope-sep">·</span> ');
+  // Scope bar identity — which Department/Establishment the whole Overview tab
+  // (KPIs, pyramid, tables) is currently reflecting. No dept selected: "All
+  // Departments" / "All Establishments". Dept selected but no establishment:
+  // dept name / "All Establishments" (i.e. all establishments under it). Both
+  // selected: dept name / that one establishment only.
+  const scopebarName = document.getElementById('ov-scopebar-name');
+  if (scopebarName) scopebarName.textContent = f.dept ? f.dept : 'All Departments';
+  const scopebarSub = document.getElementById('ov-scopebar-sub');
+  if (scopebarSub) {
+    const subLabel = f.est ? f.est : 'All Establishments';
+    let textNode = scopebarSub.firstChild;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      textNode = document.createTextNode('');
+      scopebarSub.insertBefore(textNode, scopebarSub.firstChild);
+    }
+    textNode.textContent = subLabel + ' ';
   }
   // Centre metrics
   const mx = document.getElementById('cwe-metrics');
