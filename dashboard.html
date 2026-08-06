@@ -2121,7 +2121,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
               <button class="t5-view" onclick="switchTab('data')">View all →</button>
             </div>
             <table class="t5-tbl">
-              <thead><tr><th>#</th><th>Department</th><th>Sanctioned</th><th>Direct Rec.</th><th>Vacant</th><th>Vac. Rate</th></tr></thead>
+              <thead><tr><th>#</th><th id="t5-vac-namecol">Department</th><th>Sanctioned</th><th>Direct Rec.</th><th>Vacant</th><th>Vac. Rate</th></tr></thead>
               <tbody id="t5-vac-body"></tbody>
             </table>
           </div>
@@ -2131,7 +2131,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
               <button class="t5-view" onclick="switchTab('data')">View all →</button>
             </div>
             <table class="t5-tbl">
-              <thead><tr><th>#</th><th>Department</th><th>Pending</th><th>Total</th><th>Pending Rate</th></tr></thead>
+              <thead><tr><th>#</th><th id="t5-req-namecol">Department</th><th>Vacancies</th><th>Req. Sent</th><th>Pending</th></tr></thead>
               <tbody id="t5-req-body"></tbody>
             </table>
           </div>
@@ -3146,22 +3146,31 @@ function reqClass(status) {
 function pctSafe(a, b) { return b > 0 ? (a / b * 100) : 0; }
 
 function renderTop5(data, f) {
-  const byEstab = !!f.dept;                 // drill into establishments when a dept is chosen
-  const level = byEstab ? 'Establishments' : 'Departments';
-  const keyOf = r => byEstab ? (r.Establishment || '') : (r.Department || '');
+  const byCadre = !!f.dept;                 // drill into individual cadres once a dept is chosen
+  const level = byCadre ? 'Cadres' : 'Departments';
+  const nameColLabel = byCadre ? 'Cadre' : 'Department';
+  const keyOf = r => byCadre ? (r.CadreName || '') : (r.Department || '');
   const m = {};
   data.forEach(r => {
     const k = keyOf(r);
     if (!k) return;
-    const o = m[k] || (m[k] = { sanct: 0, dr: 0, vac: 0, cnt: 0, pend: 0, sent: 0 });
+    const o = m[k] || (m[k] = { sanct: 0, dr: 0, vac: 0, cnt: 0, sent: 0 });
     const s = toNum(r.SanctionedPosts); if (s != null) o.sanct += s;
     const d = toNum(r.DRPosts);         if (d != null) o.dr += d;
     const v = toNum(r.VacancyUpdated);  if (v != null) o.vac += v;
     o.cnt++;
-    const rc = reqClass(r.RequisitionStatus);
-    if (rc === 'pending') o.pend++; else if (rc === 'sent') o.sent++;
+    if (reqClass(r.RequisitionStatus) === 'sent') o.sent++;
   });
-  const arr = Object.entries(m).map(([k, o]) => ({ k, ...o }));
+  // Pendency is derived straight from the two numbers that actually matter —
+  // how many posts are vacant vs. how many of those already have a requisition
+  // sent — rather than a separately-counted "Not Sent" tally, so the three
+  // columns always reconcile: Vacancies = Requisition Sent + Pending.
+  const arr = Object.entries(m).map(([k, o]) => ({ k, ...o, pend: Math.max(0, o.vac - o.sent) }));
+
+  const namecol1 = document.getElementById('t5-vac-namecol');
+  if (namecol1) namecol1.textContent = nameColLabel;
+  const namecol2 = document.getElementById('t5-req-namecol');
+  if (namecol2) namecol2.textContent = nameColLabel;
 
   // Table 1 — by Vacant Posts
   const t1 = arr.filter(x => x.vac > 0 || x.sanct > 0).sort((a, b) => b.vac - a.vac).slice(0, 5);
@@ -3182,25 +3191,23 @@ function renderTop5(data, f) {
       </tr>`).join('') : `<tr><td colspan="6" class="t5-empty">No data for the current filters.</td></tr>`;
   }
 
-  // Table 2 — by Requisition Pending
-  const t2 = arr.filter(x => x.pend > 0).sort((a, b) => b.pend - a.pend).slice(0, 5);
+  // Table 2 — by Requisition Pending: Vacancies vs. Requisition Sent, with the
+  // remainder shown as Pending (Vacancies - Requisition Sent).
+  const t2 = arr.filter(x => x.vac > 0).sort((a, b) => b.pend - a.pend).slice(0, 5);
   const maxPend = Math.max(1, ...t2.map(x => x.pend));
   const t2title = document.getElementById('t5-req-title');
   if (t2title) t2title.textContent = 'Top 5 ' + level + ' by Requisition Pending';
   const t2body = document.getElementById('t5-req-body');
   if (t2body) {
-    t2body.innerHTML = t2.length ? t2.map((x, i) => {
-      const tot = x.pend + x.sent;
-      return `
+    t2body.innerHTML = t2.length ? t2.map((x, i) => `
       <tr>
         <td class="t5-rank">${i + 1}</td>
         <td title="${esc(x.k)}">${esc(x.k)}</td>
+        <td>${x.vac.toLocaleString('en-IN')}</td>
+        <td style="color:#4A90C2">${x.sent.toLocaleString('en-IN')}</td>
         <td style="color:#F26522">${x.pend.toLocaleString('en-IN')}
           <div class="t5-bar"><span style="width:${(x.pend / maxPend * 100).toFixed(0)}%;background:#F26522"></span></div></td>
-        <td>${tot.toLocaleString('en-IN')}</td>
-        <td>${pctSafe(x.pend, tot).toFixed(1)}%</td>
-      </tr>`;
-    }).join('') : `<tr><td colspan="5" class="t5-empty">No pending requisitions for the current filters.</td></tr>`;
+      </tr>`).join('') : `<tr><td colspan="5" class="t5-empty">No pending requisitions for the current filters.</td></tr>`;
   }
 }
 
