@@ -452,17 +452,17 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .export-btn:hover { background: var(--navy-mid); }
 
   .table-scroll { overflow-x: auto; max-height: 420px; overflow-y: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
   .small-table { width: 100%; }
   .small-table td { max-width: none; }
   thead { position: sticky; top: 0; z-index: 2; }
   thead th {
     background: var(--navy);
     color: white;
-    padding: 7px 10px;
+    padding: 9px 12px;
     text-align: left;
-    font-weight: 500;
-    font-size: 11px;
+    font-weight: 600;
+    font-size: 12.5px;
     letter-spacing: 0.3px;
     white-space: nowrap;
     cursor: pointer;
@@ -473,14 +473,14 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   thead th.sorted-desc::after { content: ' ↓'; opacity: 0.7; }
   tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:hover { background: var(--saffron-pale); }
-  tbody td { padding: 6px 10px; vertical-align: top; max-width: 200px; }
+  tbody td { padding: 8px 12px; vertical-align: top; max-width: 200px; }
   td.truncate { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   .badge {
     display: inline-block;
-    padding: 1px 7px;
+    padding: 2px 8px;
     border-radius: 10px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 500;
     white-space: nowrap;
   }
@@ -1619,15 +1619,15 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .cwe-context { font-size:12px; color:var(--text-soft); }
   .cwe-context .accent { color:var(--saffron); font-weight:600; }
   .cwe-context .muted { color:var(--slate); }
-  .cwe-body { display:grid; grid-template-columns:minmax(230px,1fr) minmax(300px,1.25fr) minmax(190px,.72fr); gap:22px; align-items:start; }
+  .cwe-body { display:grid; grid-template-columns:minmax(230px,1fr) minmax(300px,1.25fr) minmax(190px,.72fr); gap:22px; align-items:stretch; }
 
   /* pyramid — the one intentionally colorful visualization on the page: each band
      keeps its own hue from the canonical group palette (orange/amber/teal/blue),
      with a soft diagonal gradient rather than a flat fill. Selecting a band adds a
      highlight ring instead of overwriting its color, so the group identity holds
      regardless of selection state. */
-  .ov-pyramid { width:100%; }
-  .ovp-title { font-size:23px; font-weight:800; letter-spacing:-.01em; color:var(--ink); margin-bottom:14px; text-align:center; }
+  .ov-pyramid { width:100%; text-align:center; }
+  .ovp-title { font-size:23px; font-weight:800; letter-spacing:-.01em; color:var(--ink); margin-bottom:14px; }
   .pyr-stack { display:flex; flex-direction:column; max-width:600px; margin:0 auto; }
   .pyr-level { position:relative; width:100%; height:100px; border:none; background:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
   /* Shape lives on its own absolutely-positioned layer so its clip-path can morph to
@@ -1649,38 +1649,49 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .pyr-sub { font-size:12px; font-weight:500; opacity:.85; }
   .pyr-count { font-size:12.5px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
   .pyr-level:focus-visible { outline:2px solid var(--ink); outline-offset:-4px; }
-  .ovp-shape-badge { display:inline-flex; align-self:center; margin:-4px auto 14px; font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:5px 13px; }
+  .ovp-shape-badge { display:inline-flex; margin:-4px 0 14px; font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:5px 13px; }
 
   /* centre metrics */
-  .cwe-metrics { min-width:0; }
+  .cwe-metrics { min-width:0; display:flex; flex-direction:column; }
+  /* Wraps the "Selected Group" header + breakdown as one unit so they can be
+     pushed down to start level with where the pyramid's Group A band begins
+     (not with the big title/badge above it), and centered in the column's
+     width instead of sitting flush-left against unused space. */
+  .cwe-selected { width:100%; max-width:560px; margin:92px auto 0; }
   .sg-head { margin-bottom:12px; padding-left:15px; position:relative; }
   .sg-head::before { content:''; position:absolute; left:0; top:3px; bottom:3px; width:3px; border-radius:2px; background:linear-gradient(var(--saffron),#FF9A66); }
   .sg-lbl { font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--text-soft); }
   .sg-name { font-size:20px; font-weight:800; letter-spacing:-.01em; margin-top:2px; color:var(--ink); }
   .sg-name span { color:var(--saffron); font-weight:600; font-size:15px; }
   .sg-sub { font-size:12px; color:var(--text-soft); margin-top:2px; }
-  /* margin-top nudges the breakdown down so its top card lines up with where the
-     pyramid's colored shape actually begins (below the big title + shape badge
-     in the left column), not with the "Selected Group" header text. */
-  .wf { display:flex; flex-direction:column; align-items:stretch; max-width:520px; margin-top:30px; }
-  .wf-card { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:17px 21px; box-shadow:var(--shadow-sm); }
+  .wf { display:flex; flex-direction:column; align-items:stretch; margin-top:18px; }
+  .wf-card { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:19px 23px; box-shadow:var(--shadow-sm); }
   .wf-sanct { border-color:rgba(242,101,34,.35); background:var(--saffron-pale); }
   .wf-card-head { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
-  .wf-card-ic { width:34px; height:34px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
-  .wf-card-ic svg { width:17px; height:17px; }
+  .wf-card-ic { width:38px; height:38px; border-radius:50%; flex:none; display:flex; align-items:center; justify-content:center; }
+  .wf-card-ic svg { width:19px; height:19px; }
   .wf-sanct .wf-card-ic { background:rgba(242,101,34,.15); color:var(--saffron); }
   .wf-dr .wf-card-ic { background:rgba(74,144,194,.15); color:var(--blue); }
   .wf-prom .wf-card-ic { background:rgba(139,126,200,.17); color:var(--purple); }
-  .wf-lbl { font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--ink); }
+  .wf-lbl { font-size:13.5px; font-weight:800; text-transform:uppercase; letter-spacing:.03em; color:var(--ink); }
   .wf-card-head .wf-lbl { margin:0; }
   .wf-val { font-weight:800; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; margin-top:5px; }
-  .wf-sanct .wf-val { font-size:38px; color:var(--saffron); }
-  .wf-dr .wf-val { font-size:28px; color:var(--blue); }
-  .wf-prom .wf-val { font-size:28px; color:var(--purple); }
-  .wf-note { font-size:11px; color:var(--text-soft); margin-top:4px; }
+  .wf-sanct .wf-val { font-size:42px; color:var(--saffron); }
+  .wf-dr .wf-val { font-size:30px; color:var(--blue); }
+  .wf-prom .wf-val { font-size:30px; color:var(--purple); }
+  .wf-note { font-size:11.5px; color:var(--text-soft); margin-top:4px; }
   /* top card centered above the two branches */
   .wf-top { display:flex; justify-content:center; }
-  .wf-top .wf-card { max-width:340px; width:100%; }
+  .wf-top .wf-card { max-width:370px; width:100%; }
+  .wf-reset-btn {
+    align-self:center; margin-top:20px; display:inline-flex; align-items:center; gap:7px;
+    background:none; border:1px solid var(--border); color:var(--text-soft);
+    font-family:inherit; font-size:12.5px; font-weight:600; padding:8px 18px;
+    border-radius:var(--radius-pill); cursor:pointer;
+    transition:background-color .15s ease, color .15s ease, border-color .15s ease;
+  }
+  .wf-reset-btn svg { width:14px; height:14px; }
+  .wf-reset-btn:hover { background:var(--saffron-pale); border-color:rgba(242,101,34,.35); color:var(--saffron-hover); }
   /* "Break-up of Total Sanctioned Posts" divider between the top card and the fork */
   .wf-breakup-label { display:flex; align-items:center; gap:10px; margin:16px 0 2px; }
   .wf-bl-line { flex:1; height:0; border-top:1.5px dashed rgba(242,101,34,.4); }
@@ -1708,11 +1719,14 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .wf.drawn .wf-dr { opacity:1; transform:none; transition-delay:.22s; }
   .wf.drawn .wf-prom { opacity:1; transform:none; transition-delay:.22s; }
 
-  /* empty metrics state */
-  .mm-empty { text-align:center; color:var(--text-soft); padding:20px 12px; max-width:360px; margin:0 auto; }
-  .mm-empty-ic { width:50px; height:50px; margin:0 auto 13px; border-radius:14px; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); border:1px solid rgba(242,101,34,.25); color:var(--saffron); }
-  .mm-empty-title { font-size:16px; font-weight:700; color:var(--ink); margin-bottom:7px; }
-  .mm-empty p { font-size:12.5px; line-height:1.6; margin:0; }
+  /* empty metrics state — centered in the full stretched height of the metrics
+     column (matching the pyramid's height) rather than pinned to the top. */
+  .mm-empty-wrap { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; }
+  .mm-empty { text-align:center; color:var(--text-soft); padding:20px 16px; max-width:420px; margin:0 auto; }
+  .mm-empty-ic { width:68px; height:68px; margin:0 auto 16px; border-radius:18px; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); border:1px solid rgba(242,101,34,.25); color:var(--saffron); }
+  .mm-empty-ic svg { width:30px; height:30px; }
+  .mm-empty-title { font-size:21px; font-weight:800; color:var(--ink); margin-bottom:9px; }
+  .mm-empty p { font-size:14.5px; line-height:1.6; margin:0; }
 
   /* about card — one icon+title+description row per metric, plus a note callout */
   .cwe-about { background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 17px; }
@@ -1745,11 +1759,11 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .t5-title { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink); }
   .t5-view { font-size:10.5px; color:var(--saffron); background:none; border:none; cursor:pointer; font-family:inherit; font-weight:600; white-space:nowrap; }
   .t5-tbl { width:100%; border-collapse:collapse; table-layout:fixed; }
-  .t5-tbl th { font-size:8.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-soft); text-align:right; padding:5px 7px; background:transparent; border-bottom:1px solid var(--border); }
+  .t5-tbl th { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--text-soft); text-align:right; padding:7px 8px; background:transparent; border-bottom:1px solid var(--border); }
   .t5-tbl th:hover { background:transparent; }
   .t5-tbl th:first-child { width:26px; text-align:center; }
   .t5-tbl th:nth-child(2) { text-align:left; }
-  .t5-tbl td { font-size:11.5px; padding:7px 7px; border-bottom:1px solid var(--border-soft); text-align:right; font-variant-numeric:tabular-nums; color:var(--text); vertical-align:top; }
+  .t5-tbl td { font-size:13.5px; padding:9px 8px; border-bottom:1px solid var(--border-soft); text-align:right; font-variant-numeric:tabular-nums; color:var(--text); vertical-align:top; }
   .t5-tbl td:first-child { text-align:center; }
   .t5-tbl td:nth-child(2) { text-align:left; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .t5-tbl tr:last-child td { border-bottom:none; }
@@ -2132,7 +2146,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
                 <div class="about-item-ic about-ic-prom"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div>
                 <div class="about-item-body">
                   <div class="about-item-title about-title-prom">Promotion Posts</div>
-                  <p>Number of sanctioned posts intended to be filled by promoting existing eligible employees, as per recruitment rules. This isn't currently recorded as a number, so it's shown as “Not tracked.”</p>
+                  <p>Number of sanctioned posts intended to be filled by promoting existing eligible employees, as per recruitment rules.</p>
                 </div>
               </div>
               <div class="about-note">
@@ -3006,10 +3020,12 @@ function isDying(r) { return (r.Status || '').trim().toLowerCase() === 'dying'; 
 function isActive(r) { return (r.Status || '').trim().toLowerCase() === 'active'; }
 
 function emptyMetrics() {
-  return `<div class="mm-empty">
-    <div class="mm-empty-ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
-    <div class="mm-empty-title">Select a Group</div>
-    <p>Select a group from the pyramid to explore sanctioned posts, direct recruitment posts and vacancies.</p>
+  return `<div class="mm-empty-wrap">
+    <div class="mm-empty">
+      <div class="mm-empty-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></div>
+      <div class="mm-empty-title">Select a Group</div>
+      <p>Select a group from the pyramid to explore sanctioned posts, direct recruitment posts and vacancies.</p>
+    </div>
   </div>`;
 }
 
@@ -3019,6 +3035,7 @@ function metricsHTML(group, rows, w, f) {
   const sanct = w.sSum;
   const drPct  = sanct > 0 ? (w.dSum / sanct * 100).toFixed(1) + '% of sanctioned posts' : 'no sanctioned-post data';
   return `
+    <div class="cwe-selected">
     <div class="sg-head">
       <div class="sg-lbl">Selected Group</div>
       <div class="sg-name">${groupDisplay(group)}</div>
@@ -3058,6 +3075,11 @@ function metricsHTML(group, rows, w, f) {
           <div class="wf-val wf-nt">Not tracked</div>
         </div>
       </div>
+      <button type="button" class="wf-reset-btn" onclick="selectGroup('${esc(group)}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Reset Selection
+      </button>
+    </div>
     </div>`;
 }
 
