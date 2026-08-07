@@ -1814,17 +1814,17 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
      not a full text column, so the hourglass itself can be bigger. */
   .rra-shape-badge { display:inline-flex; margin:0 0 16px; font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:5px 13px; cursor:default; }
 
-  /* Cadre Analysis Flow — dynamic hourglass. Enlarged now that the old "About
-     This Visualization" text column has folded into the single badge above —
-     this panel only shares width with the cadre list now, not a third column. */
-  .rra-hourglass-wrap { position:relative; flex:1; width:100%; max-width:560px; max-height:400px; min-height:260px; margin:auto; }
+  /* Cadre Analysis Flow — the hourglass is now a small structure/filter widget,
+     not a hero visual: no numbers drawn on the shape itself, real prominence
+     goes to the Competency Profile spider charts below. Shape sits beside a
+     compact text legend rather than centered alone in a big box. */
+  .rra-flow-row { display:flex; align-items:center; gap:22px; flex:1; }
+  .rra-hourglass-wrap { position:relative; flex:none; width:130px; height:168px; }
   .rra-hourglass { position:relative; width:100%; height:100%; }
-  /* The clip-path trapezoid lives on .rra-band-shape (a background-only layer) so it
-     never crops the label text — the text overlay stays fully readable even where
-     the silhouette pinches down to the waist. Every shape samples the same number of
-     polygon points (see buildBandClipPaths), so the browser can genuinely MORPH between
-     silhouettes via this transition — no crossfade trick needed. */
-  .rra-band { position:absolute; left:0; width:100%; border:none; background:none; color:#fff; font-family:inherit; cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; padding:0 6px; transition:filter .2s ease; }
+  /* The clip-path trapezoid lives on .rra-band-shape (a background-only layer) so the
+     shape itself can morph smoothly (see buildBandClipPaths) without any text overlay
+     to keep readable — there isn't one anymore; the legend carries the labels/counts. */
+  .rra-band { position:absolute; left:0; width:100%; border:none; background:none; padding:0; cursor:pointer; transition:filter .2s ease; }
   .rra-band-shape { position:absolute; inset:0; z-index:0; transition:background .25s ease, clip-path .32s cubic-bezier(.4,0,.2,1); }
   /* Same canonical group palette as the Overview pyramid — orange/amber/teal/blue —
      extended here per the decision to keep the two group visualizations consistent. */
@@ -1836,11 +1836,18 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   /* A glow that hugs the clipped trapezoid (not the unclipped box) — box-shadow would
      get cut off by the sibling's clip-path, so use shape-aware drop-shadow instead. */
   .rra-band.active { filter:brightness(1.08) drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 8px 16px rgba(33,29,24,.3)); z-index:2; }
-  .rra-band-name, .rra-band-count, .rra-band-pct { position:relative; z-index:1; text-align:center; text-shadow:0 1px 3px rgba(0,0,0,.25); }
-  .rra-band-name { font-size:15.5px; font-weight:700; }
-  .rra-band-count { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
-  .rra-band-pct { font-size:12px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
   .rra-band:focus-visible { outline:2px solid var(--ink); outline-offset:-3px; }
+
+  /* Legend — "on the side" of the shape: short group labels + counts, doubling
+     as the click-to-filter control (same selectGroup() the shape itself uses). */
+  .rra-hourglass-legend { display:flex; flex-direction:column; gap:6px; flex:1; min-width:0; }
+  .rra-legend-item { display:flex; align-items:center; gap:9px; width:100%; background:none; border:1px solid transparent; border-radius:8px; padding:7px 10px; font-family:inherit; font-size:12.5px; font-weight:600; color:var(--text); text-align:left; cursor:pointer; transition:background .15s ease, border-color .15s ease, color .15s ease; }
+  .rra-legend-item:hover { background:var(--bg-alt); }
+  .rra-legend-item.active { background:var(--saffron-pale); border-color:rgba(242,101,34,.35); color:var(--saffron-hover); }
+  .rra-legend-swatch { width:11px; height:11px; border-radius:3px; flex:none; }
+  .rra-legend-name { flex:1; min-width:0; }
+  .rra-legend-count { font-variant-numeric:tabular-nums; color:var(--text-soft); font-weight:700; font-size:11.5px; flex:none; }
+  .rra-legend-item.active .rra-legend-count { color:var(--saffron-hover); }
   .rra-tooltip { position:fixed; pointer-events:none; background:#1A1A1A; border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:8px 10px; font-size:11px; line-height:1.5; color:#fff; opacity:0; transform:translateY(4px); transition:opacity .12s ease; z-index:80; white-space:nowrap; }
   .rra-tooltip.visible { opacity:1; transform:none; }
   .rra-tooltip-title { font-weight:700; }
@@ -1873,9 +1880,6 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
     animation:rra-swirl-spin 1.05s linear;
   }
   @keyframes rra-swirl-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-  #rra-hourglass.rra-reset-swirl .rra-band-name,
-  #rra-hourglass.rra-reset-swirl .rra-band-count,
-  #rra-hourglass.rra-reset-swirl .rra-band-pct { opacity:0; transition:opacity .3s ease .45s; }
   .rra-reset-fading { opacity:0 !important; transition:opacity .3s ease; }
   .rra-reset-fade { opacity:.15; transition:opacity .18s ease; }
 
@@ -1904,7 +1908,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .rra-competency-scroll .rra-empty { grid-column:1 / -1; }
   .rra-radar-section { background:var(--bg-alt); border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-width:0; }
   .rra-radar-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-soft); margin-bottom:8px; }
-  .rra-radar-canvas-wrap { position:relative; height:250px; }
+  .rra-radar-canvas-wrap { position:relative; height:300px; }
   .rra-empty { padding:30px 10px; }
 
   @media (max-width:1300px) {
@@ -1913,7 +1917,6 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   }
   @media (max-width:1024px) {
     .rra-top-grid { grid-template-columns:1fr; }
-    .rra-hourglass-wrap { min-height:280px; }
     .rra-cadre-list { max-height:360px; }
     .rra-competency-scroll { grid-template-columns:1fr 1fr; }
   }
@@ -1924,8 +1927,8 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
     .rra-viewing { font-size:17px; }
     .rra-list-toggle { display:inline-block; }
     .rra-explorer-collapsible.collapsed { display:none; }
-    .rra-hourglass-wrap { min-height:240px; }
-    .rra-band-count { font-size:14px; }
+    .rra-flow-row { flex-direction:column; align-items:stretch; gap:14px; }
+    .rra-hourglass-wrap { width:100%; max-width:150px; margin:0 auto; }
     .rra-cadre-list { max-height:280px; }
     .rra-radar-canvas-wrap { height:190px; }
   }
@@ -1960,9 +1963,6 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
     .rra-band-shape { transition:background .25s ease !important; }
     .rra-glyph-spin svg, #rra-hourglass.rra-reset-swirl::before { animation:none !important; }
     #rra-hourglass.rra-reset-swirl::before { display:none !important; }
-    #rra-hourglass.rra-reset-swirl .rra-band-name,
-    #rra-hourglass.rra-reset-swirl .rra-band-count,
-    #rra-hourglass.rra-reset-swirl .rra-band-pct { transition:none !important; opacity:1 !important; }
   }
 </style>
 </head>
@@ -2262,9 +2262,10 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
         <div class="rra-breadcrumb" id="rra-breadcrumb" aria-label="Drill-down breadcrumb"></div>
 
         <div class="rra-top-grid">
-          <!-- CADRE ANALYSIS FLOW — enlarged; the shape now gets a single
-               compact badge (same treatment as the Overview pyramid) instead
-               of a whole "About This Visualization" text column. -->
+          <!-- CADRE ANALYSIS FLOW — a small structure/filter widget now, not a hero
+               visual: no numbers on the shape itself, just the silhouette beside a
+               compact Grp A / B(G) / B(NG) / C legend that doubles as the filter.
+               Real prominence goes to the Competency spider charts below. -->
           <section class="rra-panel rra-flow-about" aria-label="Cadre Analysis Flow">
             <div class="rra-panel-title-row">
               <div class="rra-panel-title">Cadre Analysis Flow</div>
@@ -2280,10 +2281,13 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
                 </svg>
               </button>
             </div>
-            <div class="rra-panel-sub">Click on any group to explore cadres</div>
+            <div class="rra-panel-sub">Click a group to filter</div>
             <div class="rra-shape-badge" id="rra-shape-badge" title="The hourglass represents the hierarchical distribution of cadres across the four major groups.">—</div>
-            <div class="rra-hourglass-wrap">
-              <div class="rra-hourglass" id="rra-hourglass" role="radiogroup" aria-label="Select a cadre Group"></div>
+            <div class="rra-flow-row">
+              <div class="rra-hourglass-wrap">
+                <div class="rra-hourglass" id="rra-hourglass" role="radiogroup" aria-label="Select a cadre Group"></div>
+              </div>
+              <div class="rra-hourglass-legend" id="rra-hourglass-legend" role="group" aria-label="Cadre groups"></div>
             </div>
             <div class="rra-tooltip" id="rra-tooltip" role="tooltip"></div>
           </section>
@@ -2998,6 +3002,18 @@ function groupPlain(g) {
   if (g === 'B (Non Gazetted)') return 'Group B (Non-Gazetted)';
   return 'Group ' + g;
 }
+// Short form for the hourglass side legend — just enough to name the group,
+// not the full "Group B (Gazetted)" wording used elsewhere.
+function groupShortLabel(g) {
+  if (g === 'A')                return 'Grp A';
+  if (g === 'B (Gazetted)')     return 'Grp B (G)';
+  if (g === 'B (Non Gazetted)') return 'Grp B (NG)';
+  if (g === 'C')                return 'Grp C';
+  return 'Grp ' + g;
+}
+// Same order as GROUP_DEFS — used to swatch the legend with the exact colors
+// the hourglass bands themselves use.
+const RRA_GROUP_COLORS = ['var(--group-a)', 'var(--group-bg)', 'var(--group-bn)', 'var(--group-c)'];
 // A cadre is "dying" per the 'To be Reviewed' column (Active | Dying). Overview excludes these.
 function isDying(r) { return (r.Status || '').trim().toLowerCase() === 'dying'; }
 // "Active" is its own explicit Cadre Status value, not just "anything that isn't
@@ -3525,12 +3541,15 @@ function computeHourglassBands(f) {
 
 function renderRRAHourglass(f) {
   const container = document.getElementById('rra-hourglass');
+  const legend = document.getElementById('rra-hourglass-legend');
   if (!container) return;
   const bands = computeHourglassBands(f);
   RRA_BANDS_CACHE = bands;
   container.dataset.shape = bands.shapeKey;
   renderRRAShapeInfo(bands.shapeKey);
   const selected = f.group;
+  // Shape itself carries no text now — just the colored silhouette, click target,
+  // and hover tooltip. The legend beside it is what names each group and its count.
   container.innerHTML = bands.map((b, i) => `
     <button type="button" class="rra-band${selected === b.group ? ' active' : ''}" data-group="${b.group}"
       style="top:${b.top}%;height:${Math.max(b.bottom - b.top, 0)}%"
@@ -3539,10 +3558,17 @@ function renderRRAHourglass(f) {
       onmouseenter="rraShowTooltip(event, ${i})" onmousemove="rraMoveTooltip(event)" onmouseleave="rraHideTooltip()"
       onfocus="rraShowTooltip(event, ${i})" onblur="rraHideTooltip()">
       <span class="rra-band-shape" style="clip-path:${b.clip}" aria-hidden="true"></span>
-      <span class="rra-band-name">${groupDisplay(b.group)}</span>
-      <span class="rra-band-count">${b.count.toLocaleString('en-IN')}</span>
-      <span class="rra-band-pct">${b.pct.toFixed(1)}%</span>
     </button>`).join('');
+  if (legend) {
+    legend.innerHTML = bands.map((b, i) => `
+      <button type="button" class="rra-legend-item${selected === b.group ? ' active' : ''}" data-group="${b.group}"
+        role="radio" aria-checked="${selected === b.group}" aria-label="${groupPlain(b.group)}: ${b.count} cadres, ${b.pct.toFixed(1)} percent"
+        onclick="selectGroup('${b.group}')">
+        <span class="rra-legend-swatch" style="background:${RRA_GROUP_COLORS[i]}" aria-hidden="true"></span>
+        <span class="rra-legend-name">${groupShortLabel(b.group)}</span>
+        <span class="rra-legend-count">${b.count.toLocaleString('en-IN')} · ${b.pct.toFixed(1)}%</span>
+      </button>`).join('');
+  }
 }
 
 function rraShowTooltip(evt, idx) {
@@ -3807,7 +3833,7 @@ function rraResetAnalysisExperience() {
   const glyph = document.getElementById('rra-reset-glyph');
   const flowPanel = document.querySelector('.rra-flow-about');
   const hourglassEl = document.getElementById('rra-hourglass');
-  const fadeTargets = ['active-filters', 'rra-cadre-list', 'rra-competency-scroll', 'rra-breadcrumb']
+  const fadeTargets = ['active-filters', 'rra-hourglass-legend', 'rra-cadre-list', 'rra-competency-scroll', 'rra-breadcrumb']
     .map(id => document.getElementById(id)).filter(Boolean);
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -3841,6 +3867,7 @@ function rraResetAnalysisExperience() {
   setTimeout(() => {
     fadeTargets.forEach(el => el.classList.add('rra-reset-fading'));
     hourglassEl?.querySelectorAll('.rra-band.active').forEach(el => el.classList.remove('active')); // selected-group highlight disappears
+    document.querySelectorAll('.rra-legend-item.active').forEach(el => el.classList.remove('active'));
   }, 400);
 
   const sequence = RRA_RESET_MORPH_ORDER.filter(s => s !== targetShape).concat(targetShape);
