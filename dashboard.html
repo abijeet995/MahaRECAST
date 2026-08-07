@@ -1800,26 +1800,24 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .rra-crumb-sep { color:var(--border); }
   .rra-crumb-current { color:var(--saffron); font-weight:600; }
 
-  .rra-grid { display:grid; grid-template-columns:minmax(420px,50fr) minmax(230px,20fr) minmax(260px,30fr); gap:16px; align-items:stretch; }
+  .rra-top-grid { display:grid; grid-template-columns:minmax(460px,64fr) minmax(280px,36fr); gap:16px; align-items:stretch; }
   .rra-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); padding:16px 18px; display:flex; flex-direction:column; min-width:0; box-shadow:var(--shadow-sm); }
-  /* Flow + About share one card, as two internal columns — mirrors the Overview
-     tab's single "Cadre Workforce Explorer" card (pyramid | metrics | about)
-     instead of splitting them into two separate, narrow cards. */
-  .rra-flow-about-grid { display:grid; grid-template-columns:minmax(280px,1.5fr) minmax(200px,1fr); gap:20px; align-items:stretch; flex:1; }
-  .rra-flow-col, .rra-about-col { display:flex; flex-direction:column; min-width:0; }
-  .rra-about-col { padding-top:2px; }
   .rra-panel-title { font-size:12.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:var(--ink); margin-bottom:4px; }
   .rra-panel-sub { font-size:11px; color:var(--text-soft); margin-bottom:14px; }
   .rra-panel-title-row { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:4px; }
   .rra-panel-title-row .rra-panel-title { margin-bottom:0; }
   .rra-list-toggle { display:none; background:var(--surface); border:1px solid var(--border); color:var(--text); font-family:inherit; font-size:10.5px; font-weight:600; padding:4px 10px; border-radius:6px; cursor:pointer; }
 
-  /* Cadre Analysis Flow — dynamic hourglass.
-     Capped to the same box as the Overview tab's pyramid (420×288, i.e. 4×72px
-     bands) instead of stretching to fill the panel — that stretch was what made
-     it look "weirdly tall"; centering it in the available space matches Overview's
-     form factor exactly while the panel itself can still be any height. */
-  .rra-hourglass-wrap { position:relative; flex:1; width:100%; max-width:420px; max-height:288px; min-height:220px; margin:auto; }
+  /* Small pill badge naming the current shape — same treatment as the Overview
+     tab's pyramid badge (.ovp-shape-badge), so the two "cadre hierarchy" visuals
+     read as one consistent component. Sits beside the flow as a compact label,
+     not a full text column, so the hourglass itself can be bigger. */
+  .rra-shape-badge { display:inline-flex; margin:0 0 16px; font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:5px 13px; cursor:default; }
+
+  /* Cadre Analysis Flow — dynamic hourglass. Enlarged now that the old "About
+     This Visualization" text column has folded into the single badge above —
+     this panel only shares width with the cadre list now, not a third column. */
+  .rra-hourglass-wrap { position:relative; flex:1; width:100%; max-width:560px; max-height:400px; min-height:260px; margin:auto; }
   .rra-hourglass { position:relative; width:100%; height:100%; }
   /* The clip-path trapezoid lives on .rra-band-shape (a background-only layer) so it
      never crops the label text — the text overlay stays fully readable even where
@@ -1839,9 +1837,9 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
      get cut off by the sibling's clip-path, so use shape-aware drop-shadow instead. */
   .rra-band.active { filter:brightness(1.08) drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 8px 16px rgba(33,29,24,.3)); z-index:2; }
   .rra-band-name, .rra-band-count, .rra-band-pct { position:relative; z-index:1; text-align:center; text-shadow:0 1px 3px rgba(0,0,0,.25); }
-  .rra-band-name { font-size:13.5px; font-weight:700; }
-  .rra-band-count { font-size:17px; font-weight:800; font-variant-numeric:tabular-nums; }
-  .rra-band-pct { font-size:10.5px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
+  .rra-band-name { font-size:15.5px; font-weight:700; }
+  .rra-band-count { font-size:20px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .rra-band-pct { font-size:12px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
   .rra-band:focus-visible { outline:2px solid var(--ink); outline-offset:-3px; }
   .rra-tooltip { position:fixed; pointer-events:none; background:#1A1A1A; border:1px solid rgba(255,255,255,.15); border-radius:8px; padding:8px 10px; font-size:11px; line-height:1.5; color:#fff; opacity:0; transform:translateY(4px); transition:opacity .12s ease; z-index:80; white-space:nowrap; }
   .rra-tooltip.visible { opacity:1; transform:none; }
@@ -1881,15 +1879,6 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .rra-reset-fading { opacity:0 !important; transition:opacity .3s ease; }
   .rra-reset-fade { opacity:.15; transition:opacity .18s ease; }
 
-  /* About */
-  .rra-about-col p { font-size:11.5px; line-height:1.6; color:var(--text); margin:0 0 12px; }
-  .rra-about-steps { display:flex; flex-direction:column; gap:10px; }
-  .rra-shape-info { background:var(--saffron-pale); border:1px solid rgba(242,101,34,.25); border-radius:10px; padding:10px 12px; margin-bottom:12px; transition:opacity .2s ease; }
-  .rra-shape-info-label { font-size:10.5px; font-weight:700; color:var(--saffron-hover); text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px; }
-  .rra-shape-info-desc { font-size:11.5px; line-height:1.55; color:var(--text); margin:0; }
-  .rra-step { display:flex; align-items:center; gap:9px; font-size:11.5px; color:var(--text); }
-  .rra-step-ic { width:26px; height:26px; flex:none; border-radius:7px; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); color:var(--saffron); }
-
   /* Cadre Explorer */
   .rra-explorer-meta { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:11.5px; color:var(--text-soft); flex-wrap:wrap; }
   .rra-explorer-group { color:var(--ink); font-weight:700; font-size:13px; }
@@ -1904,25 +1893,32 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .rra-cadre-chevron { opacity:.5; }
   .rra-list-empty { color:var(--text-soft); font-size:12px; text-align:center; padding:24px 10px; }
 
-  /* Competency Panel */
+  /* Competency Panel — full-width row under the flow/explorer, three columns
+     side by side (Domain · Functional · Behavioural) instead of a tall
+     scrolling stack, since the panel no longer has to compete for height
+     inside a 3-up row. */
+  .rra-competency-full { width:100%; }
   .rra-competency-title { display:flex; flex-wrap:wrap; align-items:baseline; gap:8px; }
   .rra-competency-sub { font-size:11px; font-weight:500; color:var(--text-soft); text-transform:none; letter-spacing:0; }
-  .rra-competency-scroll { flex:1; max-height:440px; overflow-y:auto; display:flex; flex-direction:column; gap:18px; padding-right:4px; }
-  .rra-radar-section { background:var(--bg-alt); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
-  .rra-radar-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-soft); margin-bottom:6px; }
-  .rra-radar-canvas-wrap { position:relative; height:220px; }
+  .rra-competency-scroll { display:grid; grid-template-columns:repeat(3, 1fr); gap:16px; }
+  .rra-competency-scroll .rra-empty { grid-column:1 / -1; }
+  .rra-radar-section { background:var(--bg-alt); border:1px solid var(--border); border-radius:12px; padding:12px 14px; min-width:0; }
+  .rra-radar-label { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-soft); margin-bottom:8px; }
+  .rra-radar-canvas-wrap { position:relative; height:250px; }
   .rra-empty { padding:30px 10px; }
 
   @media (max-width:1300px) {
-    .rra-grid { grid-template-columns:minmax(340px,1.4fr) minmax(210px,.85fr) minmax(230px,.95fr); gap:12px; }
+    .rra-top-grid { grid-template-columns:minmax(360px,1.5fr) minmax(230px,.9fr); gap:12px; }
     .rra-panel { padding:14px; }
-    .rra-flow-about-grid { grid-template-columns:minmax(240px,1.3fr) minmax(170px,1fr); gap:14px; }
   }
   @media (max-width:1024px) {
-    .rra-grid { grid-template-columns:1fr; }
-    .rra-flow-about-grid { grid-template-columns:1fr; }
+    .rra-top-grid { grid-template-columns:1fr; }
     .rra-hourglass-wrap { min-height:280px; }
-    .rra-cadre-list, .rra-competency-scroll { max-height:360px; }
+    .rra-cadre-list { max-height:360px; }
+    .rra-competency-scroll { grid-template-columns:1fr 1fr; }
+  }
+  @media (max-width:700px) {
+    .rra-competency-scroll { grid-template-columns:1fr; }
   }
   @media (max-width:560px) {
     .rra-viewing { font-size:17px; }
@@ -1930,7 +1926,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
     .rra-explorer-collapsible.collapsed { display:none; }
     .rra-hourglass-wrap { min-height:240px; }
     .rra-band-count { font-size:14px; }
-    .rra-cadre-list, .rra-competency-scroll { max-height:280px; }
+    .rra-cadre-list { max-height:280px; }
     .rra-radar-canvas-wrap { height:190px; }
   }
 
@@ -2265,56 +2261,31 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
 
         <div class="rra-breadcrumb" id="rra-breadcrumb" aria-label="Drill-down breadcrumb"></div>
 
-        <div class="rra-grid">
-          <!-- CADRE ANALYSIS FLOW + ABOUT (one card, two internal columns — same
-               pattern as the Overview tab's single "Cadre Workforce Explorer" card) -->
+        <div class="rra-top-grid">
+          <!-- CADRE ANALYSIS FLOW — enlarged; the shape now gets a single
+               compact badge (same treatment as the Overview pyramid) instead
+               of a whole "About This Visualization" text column. -->
           <section class="rra-panel rra-flow-about" aria-label="Cadre Analysis Flow">
-            <div class="rra-flow-about-grid">
-              <div class="rra-flow-col">
-                <div class="rra-panel-title-row">
-                  <div class="rra-panel-title">Cadre Analysis Flow</div>
-                  <button type="button" class="rra-reset-glyph" id="rra-reset-glyph" aria-label="Reset Analysis: clear current exploration and restart"
-                    onclick="rraResetAnalysisExperience()"
-                    onmouseenter="rraGlyphShowTooltip(event)" onmousemove="rraMoveTooltip(event)" onmouseleave="rraHideTooltip()"
-                    onfocus="rraGlyphShowTooltip(event)" onblur="rraHideTooltip()">
-                    <svg class="rra-glyph-svg" viewBox="0 0 36 36" width="20" height="20" aria-hidden="true">
-                      <circle class="rra-glyph-seg rra-glyph-seg-a"  cx="18" cy="18" r="15" transform="rotate(-90 18 18)"/>
-                      <circle class="rra-glyph-seg rra-glyph-seg-bg" cx="18" cy="18" r="15" transform="rotate(0 18 18)"/>
-                      <circle class="rra-glyph-seg rra-glyph-seg-bn" cx="18" cy="18" r="15" transform="rotate(90 18 18)"/>
-                      <circle class="rra-glyph-seg rra-glyph-seg-c"  cx="18" cy="18" r="15" transform="rotate(180 18 18)"/>
-                    </svg>
-                  </button>
-                </div>
-                <div class="rra-panel-sub">Click on any group to explore cadres</div>
-                <div class="rra-hourglass-wrap">
-                  <div class="rra-hourglass" id="rra-hourglass" role="radiogroup" aria-label="Select a cadre Group"></div>
-                </div>
-                <div class="rra-tooltip" id="rra-tooltip" role="tooltip"></div>
-              </div>
-
-              <div class="rra-about-col">
-                <div class="rra-panel-title">About This Visualization</div>
-                <p>The hourglass represents the hierarchical distribution of cadres across the four major groups.</p>
-                <div class="rra-shape-info" id="rra-shape-info">
-                  <div class="rra-shape-info-label" id="rra-shape-info-label">—</div>
-                  <p class="rra-shape-info-desc" id="rra-shape-info-desc"></p>
-                </div>
-                <div class="rra-about-steps">
-                  <div class="rra-step">
-                    <span class="rra-step-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 9V4.5a2.5 2.5 0 0 1 5 0V9M9 9h6l1 3v9a1 1 0 0 1-1 1H9a1 1 0 0 1-1-1v-9z"/></svg></span>
-                    <span>Select a Group</span>
-                  </div>
-                  <div class="rra-step">
-                    <span class="rra-step-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="13" x2="17" y2="13"/><line x1="7" y1="17" x2="13" y2="17"/></svg></span>
-                    <span>View Cadres</span>
-                  </div>
-                  <div class="rra-step">
-                    <span class="rra-step-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 4 7 4 17 12 22 20 17 20 7 12 2"/><line x1="12" y1="22" x2="12" y2="12"/><line x1="20" y1="7" x2="12" y2="12"/><line x1="4" y1="7" x2="12" y2="12"/></svg></span>
-                    <span>View Competency Profiles</span>
-                  </div>
-                </div>
-              </div>
+            <div class="rra-panel-title-row">
+              <div class="rra-panel-title">Cadre Analysis Flow</div>
+              <button type="button" class="rra-reset-glyph" id="rra-reset-glyph" aria-label="Reset Analysis: clear current exploration and restart"
+                onclick="rraResetAnalysisExperience()"
+                onmouseenter="rraGlyphShowTooltip(event)" onmousemove="rraMoveTooltip(event)" onmouseleave="rraHideTooltip()"
+                onfocus="rraGlyphShowTooltip(event)" onblur="rraHideTooltip()">
+                <svg class="rra-glyph-svg" viewBox="0 0 36 36" width="20" height="20" aria-hidden="true">
+                  <circle class="rra-glyph-seg rra-glyph-seg-a"  cx="18" cy="18" r="15" transform="rotate(-90 18 18)"/>
+                  <circle class="rra-glyph-seg rra-glyph-seg-bg" cx="18" cy="18" r="15" transform="rotate(0 18 18)"/>
+                  <circle class="rra-glyph-seg rra-glyph-seg-bn" cx="18" cy="18" r="15" transform="rotate(90 18 18)"/>
+                  <circle class="rra-glyph-seg rra-glyph-seg-c"  cx="18" cy="18" r="15" transform="rotate(180 18 18)"/>
+                </svg>
+              </button>
             </div>
+            <div class="rra-panel-sub">Click on any group to explore cadres</div>
+            <div class="rra-shape-badge" id="rra-shape-badge" title="The hourglass represents the hierarchical distribution of cadres across the four major groups.">—</div>
+            <div class="rra-hourglass-wrap">
+              <div class="rra-hourglass" id="rra-hourglass" role="radiogroup" aria-label="Select a cadre Group"></div>
+            </div>
+            <div class="rra-tooltip" id="rra-tooltip" role="tooltip"></div>
           </section>
 
           <!-- CADRE EXPLORER -->
@@ -2331,13 +2302,13 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
               <div class="rra-cadre-list" id="rra-cadre-list"></div>
             </div>
           </section>
-
-          <!-- COMPETENCY PANEL -->
-          <section class="rra-panel rra-competency" aria-label="Competency profile">
-            <div class="rra-panel-title" id="rra-competency-title">Competency Profile</div>
-            <div class="rra-competency-scroll" id="rra-competency-scroll"></div>
-          </section>
         </div>
+
+        <!-- COMPETENCY PANEL — full width, Domain | Functional | Behavioural side by side -->
+        <section class="rra-panel rra-competency rra-competency-full" aria-label="Competency profile">
+          <div class="rra-panel-title" id="rra-competency-title">Competency Profile</div>
+          <div class="rra-competency-scroll" id="rra-competency-scroll"></div>
+        </section>
       </div>
     </div>
 
@@ -3464,12 +3435,11 @@ const HOURGLASS_SHAPE_INFO = {
 };
 
 function renderRRAShapeInfo(shapeKey) {
-  const labelEl = document.getElementById('rra-shape-info-label');
-  const descEl = document.getElementById('rra-shape-info-desc');
+  const badge = document.getElementById('rra-shape-badge');
   const info = HOURGLASS_SHAPE_INFO[shapeKey];
-  if (!labelEl || !descEl || !info) return;
-  labelEl.textContent = info.label;
-  descEl.textContent = info.desc;
+  if (!badge || !info) return;
+  badge.textContent = info.label;
+  badge.title = info.desc;
 }
 
 function widthAtT(t, profile) {
@@ -3698,14 +3668,18 @@ function rraToggleCadreList() {
 
 // ── Competency Panel ──
 function destroyRRACharts() {
-  ['F', 'B', 'D'].forEach(letter => {
+  ['F', 'B', 'D'].forEach(letter => { // order doesn't matter here, just full cleanup
     if (RRA_CHARTS[letter]) { RRA_CHARTS[letter].destroy(); RRA_CHARTS[letter] = null; }
   });
 }
 
+// Domain first (left), Functional (middle), Behavioural (right) — the fixed
+// left-to-right order of the three-column competency grid.
+const RRA_COMPETENCY_COL_ORDER = ['D', 'F', 'B'];
+
 function ensureRadarSectionsExist(scroll) {
   if (document.getElementById('rra-radar-F')) return;
-  scroll.innerHTML = ['F', 'B', 'D'].map(letter => `
+  scroll.innerHTML = RRA_COMPETENCY_COL_ORDER.map(letter => `
     <div class="rra-radar-section">
       <div class="rra-radar-label">${CATEGORY_LETTER_NAMES[letter]}</div>
       <div class="rra-radar-canvas-wrap"><canvas id="rra-radar-${letter}"></canvas></div>
@@ -3815,7 +3789,7 @@ function renderRRACompetencyPanel() {
   }
 
   ensureRadarSectionsExist(scroll);
-  ['F', 'B', 'D'].forEach(letter => updateRadar(letter, rec.categories[letter]));
+  RRA_COMPETENCY_COL_ORDER.forEach(letter => updateRadar(letter, rec.categories[letter]));
 }
 
 // ── Reset Analysis glyph ──
