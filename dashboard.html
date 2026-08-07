@@ -1470,6 +1470,15 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .nav-filters .filter-select:hover { background-color: var(--saffron-hover); }
   .nav-filters .filter-select:focus { outline: none; border-color: #fff; box-shadow: 0 0 0 3px rgba(242,101,34,.25); }
   .nav-filters .filter-select option { background: #fff; color: var(--ink); }
+  .nav-filters-reset {
+    align-self: center; margin-top: 2px; display: inline-flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid var(--saffron); color: var(--saffron);
+    font-family: inherit; font-size: 11.5px; font-weight: 700; padding: 6px 14px;
+    border-radius: var(--radius-pill); cursor: pointer;
+    transition: background-color .15s ease, color .15s ease;
+  }
+  .nav-filters-reset svg { width: 12px; height: 12px; }
+  .nav-filters-reset:hover { background-color: var(--saffron); color: #fff; }
 
   @media (max-width: 900px) {
     .shell { grid-template-columns: minmax(0,1fr) !important; }
@@ -1628,8 +1637,8 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
      regardless of selection state. */
   .ov-pyramid { width:100%; text-align:center; }
   .ovp-title { font-size:23px; font-weight:800; letter-spacing:-.01em; color:var(--ink); margin-bottom:14px; }
-  .pyr-stack { display:flex; flex-direction:column; max-width:600px; margin:0 auto; }
-  .pyr-level { position:relative; width:100%; height:100px; border:none; background:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
+  .pyr-stack { display:flex; flex-direction:column; max-width:680px; margin:0 auto; }
+  .pyr-level { position:relative; width:100%; height:118px; border:none; background:none; color:#fff; padding:0; cursor:pointer; font-family:inherit; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:transform .2s ease; text-shadow:0 1px 3px rgba(0,0,0,.25); }
   /* Shape lives on its own absolutely-positioned layer so its clip-path can morph to
      reflect the department/establishment's real Group A/B/C mix (pyramid, hourglass,
      diamond, inverted) without shrinking the button's click target or clipping the
@@ -1645,9 +1654,9 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .pyr-level.active { transform:scale(1.02); z-index:2; }
   .pyr-level.active .pyr-shape { filter:brightness(1.08) drop-shadow(0 0 3px rgba(255,255,255,.9)) drop-shadow(0 8px 16px rgba(33,29,24,.3)); }
   .pyr-name, .pyr-sub, .pyr-count { position:relative; z-index:1; }
-  .pyr-name { font-size:16.5px; font-weight:700; }
-  .pyr-sub { font-size:12px; font-weight:500; opacity:.85; }
-  .pyr-count { font-size:12.5px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
+  .pyr-name { font-size:19px; font-weight:700; }
+  .pyr-sub { font-size:13.5px; font-weight:500; opacity:.85; }
+  .pyr-count { font-size:14px; font-weight:600; opacity:.9; font-variant-numeric:tabular-nums; }
   .pyr-level:focus-visible { outline:2px solid var(--ink); outline-offset:-4px; }
   .ovp-shape-badge { display:inline-flex; margin:-4px 0 14px; font-size:12.5px; font-weight:700; letter-spacing:.02em; color:var(--saffron-hover); background:var(--saffron-pale); border:1px solid rgba(242,101,34,.3); border-radius:var(--radius-pill); padding:5px 13px; }
 
@@ -1729,7 +1738,10 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .mm-empty p { font-size:14.5px; line-height:1.6; margin:0; }
 
   /* about card — one icon+title+description row per metric, plus a note callout */
-  .cwe-about { background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 17px; }
+  /* align-self:start opts this column out of .cwe-body's stretch — its content
+     is much shorter than the pyramid, so stretching left a big dead-space gap
+     inside the card's own border/background. */
+  .cwe-about { align-self:start; background:var(--bg-alt); border:1px solid var(--border); border-radius:var(--radius-md); padding:16px 17px; }
   .about-head { display:flex; align-items:center; gap:8px; margin-bottom:13px; }
   .about-head-ic { width:22px; height:22px; border-radius:7px; flex:none; display:flex; align-items:center; justify-content:center; background:var(--saffron-pale); color:var(--saffron); }
   .about-head-ic svg { width:13px; height:13px; }
@@ -2002,6 +2014,10 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
         <label class="nav-filter-lbl" for="est-filter">Establishment</label>
         <select class="filter-select" id="est-filter" onchange="applyFilters()"><option value="">All Establishments</option></select>
       </div>
+      <button type="button" class="nav-filters-reset" onclick="resetAllFilters()" aria-label="Reset all filters">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        Reset
+      </button>
     </div>
   </nav>
 
