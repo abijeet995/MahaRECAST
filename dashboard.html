@@ -1911,6 +1911,15 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
   .rra-radar-canvas-wrap { position:relative; height:300px; }
   .rra-empty { padding:30px 10px; }
 
+  /* Explainer for the two-series radar (this cadre vs. its Exam Bucket peers) —
+     sits under the three charts rather than repeating a legend on each one. */
+  .rra-competency-legend { display:flex; flex-wrap:wrap; align-items:center; gap:14px; margin-top:14px; padding-top:12px; border-top:1px solid var(--border); font-size:11.5px; color:var(--text-soft); }
+  .rra-legend-swatch-row { display:flex; align-items:center; gap:6px; font-weight:700; color:var(--text); flex:none; }
+  .rra-competency-swatch { width:20px; height:0; border-top:2.5px solid; border-radius:2px; }
+  .rra-swatch-actual { border-color:#F26522; }
+  .rra-swatch-avg { border-top-style:dashed; border-color:#9B9389; }
+  .rra-competency-legend-note { flex:1 1 260px; min-width:0; line-height:1.5; }
+
   @media (max-width:1300px) {
     .rra-top-grid { grid-template-columns:minmax(360px,1.5fr) minmax(230px,.9fr); gap:12px; }
     .rra-panel { padding:14px; }
@@ -2312,6 +2321,7 @@ r.read=function(e,t,r,n,o){var i,s,a=8*o-n-1,u=(1<<a)-1,c=u>>1,l=-7,h=r?o-1:0,p=
         <section class="rra-panel rra-competency rra-competency-full" aria-label="Competency profile">
           <div class="rra-panel-title" id="rra-competency-title">Competency Profile</div>
           <div class="rra-competency-scroll" id="rra-competency-scroll"></div>
+          <div class="rra-competency-legend" id="rra-competency-legend"></div>
         </section>
       </div>
     </div>
@@ -2761,6 +2771,43 @@ function findCompetencyRecord(cadreRow) {
   const looseKey = normKey(cadreRow.Group, cadreRow.CadreName);
   match = COMPETENCY_DATA.find(c => normKey(c.Group, c.CadreName) === looseKey);
   return match || null;
+}
+
+// ── Competency Profile: Exam Bucket peer average (the grey spider) ──
+// Every cadre sharing the selected cadre's Exam Bucket, deduped to one
+// competency record per (Department, Group, CadreName) — several RAW_DATA
+// rows (different establishments) can point at the same competency profile.
+function competencyPeersForBucket(examBucket) {
+  if (!examBucket) return [];
+  const seen = new Set();
+  const peers = [];
+  RAW_DATA.forEach(r => {
+    if ((r.ExamBucket || '') !== examBucket) return;
+    const rec = findCompetencyRecord(r);
+    if (!rec) return;
+    const key = normKey(rec.Department, rec.Group, rec.CadreName);
+    if (seen.has(key)) return;
+    seen.add(key);
+    peers.push(rec);
+  });
+  return peers;
+}
+
+// Average each axis across whatever peers actually have that exact competency
+// code. Domain Specific competencies are often cadre-unique (a Deputy SP's
+// domain axes usually aren't a Tehsildar's), so an axis can end up with zero
+// peers to average — in that case fall back to the cadre's own score, so the
+// grey line simply sits on top of the orange one there instead of collapsing
+// to 0 and reading as "this cadre scores way above the bucket."
+function categoryPeerAverage(peers, letter, ownEntries) {
+  return ownEntries.map(entry => {
+    let sum = 0, n = 0;
+    peers.forEach(p => {
+      const match = (p.categories[letter] || []).find(e => e.code === entry.code);
+      if (match) { sum += match.score; n++; }
+    });
+    return n ? (sum / n) : entry.score;
+  });
 }
 
 // Auto-load on page open
@@ -3729,18 +3776,26 @@ function wrapLabel(text, maxLen) {
   return lines;
 }
 
-function updateRadar(letter, entries) {
+// peerValues is optional — an array the same length/order as entries, one
+// averaged score per axis across the selected cadre's Exam Bucket peers.
+// Drawn as dataset 0 (grey, behind) with the cadre's own scores as dataset 1
+// (orange, in front) — Chart.js paints array order back-to-front, so this is
+// what puts the peer-average context behind the actual, specific values.
+function updateRadar(letter, entries, peerValues) {
   const canvas = document.getElementById('rra-radar-' + letter);
   if (!canvas) return;
   const labels = entries.map(e => wrapLabel(`${e.label} ${Math.round(e.score / 5 * 100)}%`));
   const values = entries.map(e => e.score);
   const codes = entries.map(e => e.code);
+  const hasPeer = Array.isArray(peerValues);
 
   if (RRA_CHARTS[letter]) {
     const c = RRA_CHARTS[letter];
     c.data.labels = labels;
-    c.data.datasets[0].data = values;
+    c.data.datasets[0].data = hasPeer ? peerValues : values;
     c.data.datasets[0]._codes = codes;
+    c.data.datasets[1].data = values;
+    c.data.datasets[1]._codes = codes;
     c.update();
     return;
   }
@@ -3748,14 +3803,28 @@ function updateRadar(letter, entries) {
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   RRA_CHARTS[letter] = new Chart(canvas, {
     type: 'radar',
-    data: { labels, datasets: [{
-      data: values,
-      _codes: codes,
-      backgroundColor: 'rgba(242,101,34,.25)',
-      borderColor: '#F26522',
-      pointBackgroundColor: '#F26522',
-      borderWidth: 2,
-    }] },
+    data: { labels, datasets: [
+      {
+        label: 'Exam Bucket average',
+        data: hasPeer ? peerValues : values,
+        _codes: codes,
+        backgroundColor: 'rgba(120,113,103,.16)',
+        borderColor: '#9B9389',
+        pointBackgroundColor: '#9B9389',
+        borderWidth: 2,
+        borderDash: [4, 3],
+        pointRadius: 2,
+      },
+      {
+        label: 'This cadre',
+        data: values,
+        _codes: codes,
+        backgroundColor: 'rgba(242,101,34,.25)',
+        borderColor: '#F26522',
+        pointBackgroundColor: '#F26522',
+        borderWidth: 2,
+      },
+    ] },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -3777,7 +3846,7 @@ function updateRadar(letter, entries) {
             label(ctx) {
               const code = ctx.dataset._codes ? ctx.dataset._codes[ctx.dataIndex] : null;
               const g = code ? GLOSSARY_MAP[code] : null;
-              const line = `Score: ${ctx.formattedValue} / 5`;
+              const line = `${ctx.dataset.label}: ${ctx.formattedValue} / 5`;
               return g && g.definition ? [line, g.definition] : line;
             },
           },
@@ -3790,18 +3859,21 @@ function updateRadar(letter, entries) {
 function renderRRACompetencyPanel() {
   const scroll = document.getElementById('rra-competency-scroll');
   const titleEl = document.getElementById('rra-competency-title');
+  const legendEl = document.getElementById('rra-competency-legend');
   if (!scroll || !titleEl) return;
   const f = currentFilters();
 
   if (!f.group) {
     titleEl.textContent = 'Competency Profile';
     scroll.innerHTML = rraEmptyState('Select a Group', 'Click any section of the hourglass to begin exploring cadres.');
+    if (legendEl) legendEl.innerHTML = '';
     destroyRRACharts();
     return;
   }
   if (!RRA_SELECTED_CADRE) {
     titleEl.textContent = 'Competency Profile';
     scroll.innerHTML = rraEmptyState('Select a Cadre', 'Choose a cadre from the list to view competency profiles.');
+    if (legendEl) legendEl.innerHTML = '';
     destroyRRACharts();
     return;
   }
@@ -3810,12 +3882,30 @@ function renderRRACompetencyPanel() {
   titleEl.innerHTML = `${esc(RRA_SELECTED_CADRE.CadreName)} <span class="rra-competency-sub">${groupPlain(RRA_SELECTED_CADRE.Group)}</span>`;
   if (!rec) {
     scroll.innerHTML = rraEmptyState('Profile Unavailable', 'Competency profile unavailable for this cadre.');
+    if (legendEl) legendEl.innerHTML = '';
     destroyRRACharts();
     return;
   }
 
   ensureRadarSectionsExist(scroll);
-  RRA_COMPETENCY_COL_ORDER.forEach(letter => updateRadar(letter, rec.categories[letter]));
+  const examBucket = RRA_SELECTED_CADRE.ExamBucket || '';
+  const peers = competencyPeersForBucket(examBucket);
+  RRA_COMPETENCY_COL_ORDER.forEach(letter => {
+    const peerValues = categoryPeerAverage(peers, letter, rec.categories[letter]);
+    updateRadar(letter, rec.categories[letter], peerValues);
+  });
+
+  if (legendEl) {
+    // peers includes the selected cadre itself if it's in COMPETENCY_DATA, so
+    // "n peer cadres" below is peers.length; only shown when there's an Exam
+    // Bucket to speak of and more than just this one cadre in it.
+    legendEl.innerHTML = `
+      <span class="rra-legend-swatch-row"><span class="rra-competency-swatch rra-swatch-actual"></span>This cadre</span>
+      <span class="rra-legend-swatch-row"><span class="rra-competency-swatch rra-swatch-avg"></span>Exam Bucket average</span>
+      <span class="rra-competency-legend-note">${examBucket
+        ? `Grey shows the average across ${peers.length} cadre${peers.length === 1 ? '' : 's'} in the "${esc(examBucket)}" Exam Bucket. Where a competency is unique to this cadre, the grey line matches the orange one.`
+        : 'This cadre has no Exam Bucket set, so no peer average is available.'}</span>`;
+  }
 }
 
 // ── Reset Analysis glyph ──
